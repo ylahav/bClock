@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:bclock/l10n/app_localizations.dart';
@@ -16,6 +17,33 @@ Widget _app(Widget home, {Locale? locale}) => MaterialApp(
     );
 
 void main() {
+  // No real window under test: record the runner's window calls instead.
+  final windowCalls = <MethodCall>[];
+  setUp(() {
+    windowCalls.clear();
+    TestWidgetsFlutterBinding.ensureInitialized()
+        .defaultBinaryMessenger
+        .setMockMethodCallHandler(const MethodChannel('bclock/window'),
+            (call) async {
+      windowCalls.add(call);
+      return null;
+    });
+  });
+
+  test('Title bar brightness follows the app theme', () async {
+    SharedPreferences.setMockInitialValues({'flutter.themeMode': 2}); // dark
+    final provider = AppProvider();
+    await provider.load();
+    List<Object?> darkTitleBar() => windowCalls
+        .where((c) => c.method == 'setDarkTitleBar')
+        .map((c) => c.arguments)
+        .toList();
+    expect(darkTitleBar(), [true]);
+
+    provider.toggleTheme();
+    expect(darkTitleBar(), [true, false]);
+  });
+
   testWidgets('StopwatchScreen renders start button', (WidgetTester tester) async {
     await tester.pumpWidget(_app(const StopwatchScreen()));
 

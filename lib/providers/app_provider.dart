@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -67,8 +68,20 @@ class AppProvider extends ChangeNotifier {
     _weekStart =
         WeekStart.values[p.getInt(_kWeekStart) ?? WeekStart.monday.index];
     if (_alwaysOnTop) await windowManager.setAlwaysOnTop(true);
+    // Before the window is first shown, so the title bar never flashes
+    // light on a dark start.
+    await _applyWindowBrightness();
     notifyListeners();
   }
+
+  /// Handled by the Windows runner (windows/runner/flutter_window.cpp).
+  static const _windowChannel = MethodChannel('bclock/window');
+
+  /// Matches the native Windows title bar to the app theme — Flutter only
+  /// paints the client area. Not window_manager.setBrightness: that one
+  /// refuses a dark title bar while Windows itself is in light mode.
+  Future<void> _applyWindowBrightness() =>
+      _windowChannel.invokeMethod('setDarkTitleBar', isDark);
 
   Future<void> _save() async {
     final p = await SharedPreferences.getInstance();
@@ -88,6 +101,7 @@ class AppProvider extends ChangeNotifier {
 
   void toggleTheme() {
     _themeMode = isDark ? ThemeMode.light : ThemeMode.dark;
+    _applyWindowBrightness();
     notifyListeners();
     _save();
   }

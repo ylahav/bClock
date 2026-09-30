@@ -21,6 +21,7 @@ bClock is a minimalist **Windows desktop** Flutter app: analog/digital clock, st
 - Global state is a single `AppProvider` (`lib/providers/app_provider.dart`) — a `ChangeNotifier` provided at the root in `main.dart` and consumed via `provider`. It owns theme mode, clock view (analog/digital/both), digital position, clock size, `alwaysOnTop`, and nav-bar visibility.
 - Every setter calls `notifyListeners()` and then `_save()` to `SharedPreferences`. `AppProvider.load()` is awaited **before** `runApp` so first frame renders with restored state.
 - `setAlwaysOnTop` also calls `windowManager.setAlwaysOnTop` — the provider is the single source of truth for that OS-level flag.
+- Likewise the **native title bar follows the app theme**: `load()` and `toggleTheme()` call `setDarkTitleBar` on the `bclock/window` channel, handled in `windows/runner/flutter_window.cpp` → `Win32Window::SetDarkTitleBar`, whose override `UpdateTheme` respects on system colour changes. Don't use `windowManager.setBrightness` — it refuses a dark title bar while Windows is in light mode. Tests mock the `bclock/window` channel.
 
 ### Screen shell
 - `MainScreen` in `main.dart` is a stateful `IndexedStack` of the four screens with a `NavigationBar`. The nav bar can be collapsed via a chevron handle; visibility is persisted (`AppProvider.showNav`).

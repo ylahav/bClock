@@ -280,9 +280,23 @@ void Win32Window::UpdateTheme(HWND const window) {
                                RRF_RT_REG_DWORD, nullptr, &light_mode,
                                &light_mode_size);
 
-  if (result == ERROR_SUCCESS) {
+  if (dark_title_bar_override_.has_value()) {
+    BOOL enable_dark_mode = *dark_title_bar_override_;
+    DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE,
+                          &enable_dark_mode, sizeof(enable_dark_mode));
+  } else if (result == ERROR_SUCCESS) {
     BOOL enable_dark_mode = light_mode == 0;
     DwmSetWindowAttribute(window, DWMWA_USE_IMMERSIVE_DARK_MODE,
                           &enable_dark_mode, sizeof(enable_dark_mode));
+  }
+}
+
+void Win32Window::SetDarkTitleBar(bool dark) {
+  dark_title_bar_override_ = dark;
+  if (window_handle_) {
+    UpdateTheme(window_handle_);
+    // Repaint the non-client area so the change shows immediately.
+    RedrawWindow(window_handle_, nullptr, nullptr,
+                 RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW);
   }
 }
