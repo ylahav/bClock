@@ -100,5 +100,14 @@
     }
   },
   "weekStart": "Week starts on",
-  "weekStartHint": "First day shown in the alarm day picker"
+  "weekStartHint": "First day shown in the alarm day picker",
+  "elapsedDurationWithHours": "{hours, plural, =1{1 hour} other{{hours} hours}}, {minutes, plural, =1{1 minute} other{{minutes} minutes}}, {seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "@elapsedDurationWithHours": {
+    "description": "Screen-reader label for the stopwatch time from one hour on",
+    "placeholders": {
+      "hours": {"type": "int"},
+      "minutes": {"type": "int"},
+      "seconds": {"type": "int"}
+    }
+  }
 }

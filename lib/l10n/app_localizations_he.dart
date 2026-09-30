@@ -249,4 +249,30 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get weekStartHint => 'היום הראשון בבורר הימים של ההתראות';
+
+  @override
+  String elapsedDurationWithHours(int hours, int minutes, int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours שעות',
+      two: 'שעתיים',
+      one: 'שעה אחת',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes דקות',
+      two: 'שתי דקות',
+      one: 'דקה אחת',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds שניות',
+      two: 'שתי שניות',
+      one: 'שנייה אחת',
+    );
+    return '$_temp0, $_temp1, $_temp2';
+  }
 }

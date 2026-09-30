@@ -61,6 +61,29 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('Stopwatch keeps the hours past 60 minutes', (tester) async {
+    const elapsed = Duration(hours: 1, minutes: 15, seconds: 3);
+    SharedPreferences.setMockInitialValues(
+        {'flutter.sw.baseMs': elapsed.inMilliseconds});
+    // Compact-window width: the longer H:MM:SS.cs must scale, not overflow.
+    tester.view.physicalSize = const Size(300, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(_app(const StopwatchScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1:15:03.00'), findsOneWidget);
+    // One line (not wrapped) and within the 24px page gutters, as drawn —
+    // getRect includes the FittedBox scale.
+    final rect = tester.getRect(find.text('1:15:03.00'));
+    expect(rect.height, lessThan(64 * 1.5));
+    expect(rect.width, lessThanOrEqualTo(300 - 2 * 24));
+    expect(find.bySemanticsLabel('1 hour, 15 minutes, 3 seconds'),
+        findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('StopwatchScreen follows the app locale', (tester) async {
     await tester.pumpWidget(
         _app(const StopwatchScreen(), locale: const Locale('fr')));

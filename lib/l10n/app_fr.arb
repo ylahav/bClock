@@ -72,5 +72,6 @@
   "back": "Retour",
   "elapsedDuration": "{minutes, plural, =0{0 minute} =1{1 minute} other{{minutes} minutes}}, {seconds, plural, =0{0 seconde} =1{1 seconde} other{{seconds} secondes}}",
   "weekStart": "La semaine commence le",
-  "weekStartHint": "Premier jour du sélecteur de jours des alarmes"
+  "weekStartHint": "Premier jour du sélecteur de jours des alarmes",
+  "elapsedDurationWithHours": "{hours, plural, =1{1 heure} other{{hours} heures}}, {minutes, plural, =0{0 minute} =1{1 minute} other{{minutes} minutes}}, {seconds, plural, =0{0 seconde} =1{1 seconde} other{{seconds} secondes}}"
 }

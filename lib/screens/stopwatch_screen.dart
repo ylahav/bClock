@@ -111,12 +111,22 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
     }
   }
 
+  /// `MM:SS.cs`, or `H:MM:SS.cs` from one hour on.
   String _fmt(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     final cs =
         (d.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
-    return '$m:$s.$cs';
+    return d.inHours > 0 ? '${d.inHours}:$m:$s.$cs' : '$m:$s.$cs';
+  }
+
+  /// Spoken form of [_fmt], in the same units the display shows.
+  String _spoken(AppLocalizations l, Duration d) {
+    final m = d.inMinutes.remainder(60);
+    final s = d.inSeconds.remainder(60);
+    return d.inHours > 0
+        ? l.elapsedDurationWithHours(d.inHours, m, s)
+        : l.elapsedDuration(m, s);
   }
 
   @override
@@ -138,14 +148,18 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
 
           // Main timer display
           Center(
-            child: PlinthClock(
-              _fmt(elapsed),
-              size: 64,
-              weight: FontWeight.w200,
-              letterSpacing: -1,
-              // Spoken as a duration, not read as a time of day.
-              semanticLabel: l.elapsedDuration(
-                  elapsed.inMinutes, elapsed.inSeconds.remainder(60)),
+            // Scale down, never up: past an hour the extra "H:" won't fit
+            // the compact window at 64px.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: PlinthClock(
+                _fmt(elapsed),
+                size: 64,
+                weight: FontWeight.w200,
+                letterSpacing: -1,
+                // Spoken as a duration, not read as a time of day.
+                semanticLabel: _spoken(l, elapsed),
+              ),
             ),
           ),
 

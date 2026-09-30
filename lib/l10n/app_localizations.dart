@@ -539,6 +539,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'First day shown in the alarm day picker'**
   String get weekStartHint;
+
+  /// Screen-reader label for the stopwatch time from one hour on
+  ///
+  /// In en, this message translates to:
+  /// **'{hours, plural, =1{1 hour} other{{hours} hours}}, {minutes, plural, =1{1 minute} other{{minutes} minutes}}, {seconds, plural, =1{1 second} other{{seconds} seconds}}'**
+  String elapsedDurationWithHours(int hours, int minutes, int seconds);
 }
 
 class _AppLocalizationsDelegate

@@ -72,5 +72,6 @@
   "back": "חזרה",
   "elapsedDuration": "{minutes, plural, =1{דקה אחת} =2{שתי דקות} other{{minutes} דקות}}, {seconds, plural, =1{שנייה אחת} =2{שתי שניות} other{{seconds} שניות}}",
   "weekStart": "השבוע מתחיל ביום",
-  "weekStartHint": "היום הראשון בבורר הימים של ההתראות"
+  "weekStartHint": "היום הראשון בבורר הימים של ההתראות",
+  "elapsedDurationWithHours": "{hours, plural, =1{שעה אחת} =2{שעתיים} other{{hours} שעות}}, {minutes, plural, =1{דקה אחת} =2{שתי דקות} other{{minutes} דקות}}, {seconds, plural, =1{שנייה אחת} =2{שתי שניות} other{{seconds} שניות}}"
 }

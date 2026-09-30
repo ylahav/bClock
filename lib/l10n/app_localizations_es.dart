@@ -248,4 +248,27 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get weekStartHint =>
       'Primer día en el selector de días de las alarmas';
+
+  @override
+  String elapsedDurationWithHours(int hours, int minutes, int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours horas',
+      one: '1 hora',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutos',
+      one: '1 minuto',
+    );
+    String _temp2 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: '$seconds segundos',
+      one: '1 segundo',
+    );
+    return '$_temp0, $_temp1, $_temp2';
+  }
 }
