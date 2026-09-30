@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch/PR cancels the older run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep in step with the local toolchain (`flutter --version`).
+  FLUTTER_VERSION: 3.47.5
+
+jobs:
+  test:
+    name: Analyze & test
+    # Linux: the tests don't touch Windows APIs, and Linux minutes are
+    # cheaper than Windows ones on a private repo.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      # Fails if the .arb files and the committed generated localizations
+      # have drifted apart.
+      - name: Check generated localizations are up to date
+        run: |
+          flutter gen-l10n
+          git diff --exit-code -- lib/l10n
+
+      - run: flutter analyze
+
+      - run: flutter test
+
+  build:
+    name: Windows release build
+    needs: test
+    # Only for main and manual runs — Windows minutes cost 2x.
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter build windows --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bclock-windows-${{ github.sha }}
+          path: build/windows/x64/runner/Release/
+          retention-days: 14
