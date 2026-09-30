@@ -1,0 +1,49 @@
+name: bclock
+description: A minimalist clock app with analog/digital, stopwatch, world clocks, and alarms.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  provider: ^6.1.5+1
+  intl: ^0.20.3
+  window_manager: ^0.5.2
+  shared_preferences: ^2.5.5
+  audioplayers: ^6.8.1
+  msix: ^3.18.0
+  timezone: ^0.11.1
+  plinth_components: 1.8.0
+  plinth_hooks: 1.8.0
+  plinth_blocks: 0.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/sounds/alarm.wav
+    - assets/icons/
+
+msix_config:
+  display_name: bClock
+  publisher_display_name: bClock
+  identity_name: com.bclock.app
+  publisher: CN=bClock
+  msix_version: 1.0.0.0
+  logo_path: assets\icons\app_icon.png
+  start_menu_icon_path: assets\icons\app_icon.png
+  tile_icon_path: assets\icons\app_icon.png
+  icons_background_color: transparent
+  architecture: x64
+  sign_msix: false
+  output_name: bClock_Setup

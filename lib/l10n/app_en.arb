@@ -1,0 +1,104 @@
+{
+  "@@locale": "en",
+  "navClock": "Clock",
+  "navStopwatch": "Stopwatch",
+  "navWorld": "World",
+  "navAlarm": "Alarm",
+  "viewDigital": "Digital",
+  "viewBoth": "Both",
+  "viewAnalog": "Analog",
+  "toggleTheme": "Toggle theme",
+  "settings": "Settings",
+  "hideControls": "Hide controls",
+  "stopwatchTitle": "Stopwatch",
+  "lap": "Lap",
+  "reset": "Reset",
+  "pause": "Pause",
+  "start": "Start",
+  "lapTime": "Time",
+  "lapNumber": "Lap {n}",
+  "@lapNumber": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "worldTitle": "World",
+  "addCity": "Add city",
+  "addCityTitle": "Add City",
+  "noCities": "No cities added",
+  "addACity": "Add a city",
+  "removeCity": "Remove {city}",
+  "@removeCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "searchCities": "Search cities…",
+  "alarmsTitle": "Alarms",
+  "addAlarm": "Add alarm",
+  "noAlarms": "No alarms set",
+  "addAnAlarm": "Add an alarm",
+  "labelTitle": "Label",
+  "labelPlaceholder": "e.g. Wake up, Meeting…",
+  "cancel": "Cancel",
+  "save": "Save",
+  "addLabel": "Add label…",
+  "repeat": "Repeat",
+  "alarmDisabled": "Disabled",
+  "today": "Today",
+  "tomorrow": "Tomorrow",
+  "defaultAlarmWakeUp": "Wake up",
+  "defaultAlarmMorning": "Morning routine",
+  "snooze": "Snooze {minutes} min",
+  "@snooze": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "dismiss": "Dismiss",
+  "sectionClockDisplay": "Clock Display",
+  "defaultView": "Default View",
+  "defaultViewHint": "What to show on the clock screen",
+  "digitalPosition": "Digital Position",
+  "digitalPositionHint": "Where to place the digital clock when showing both",
+  "aboveAnalog": "Above analog",
+  "belowAnalog": "Below analog",
+  "clockSize": "Clock Size",
+  "clockSizeHint": "Scales both analog and digital displays",
+  "sizeSmall": "Small",
+  "sizeMedium": "Medium",
+  "sizeLarge": "Large",
+  "sectionAppearance": "Appearance",
+  "darkMode": "Dark Mode",
+  "usingDarkTheme": "Using dark theme",
+  "usingLightTheme": "Using light theme",
+  "sectionWindow": "Window",
+  "alwaysOnTop": "Always on Top",
+  "alwaysOnTopHint": "Keep bClock above all other windows",
+  "sectionLanguage": "Language",
+  "language": "Language",
+  "languageHint": "Language of the interface",
+  "languageSystem": "System default",
+  "a11yCloseDialog": "Close dialog",
+  "a11yClearSearch": "Clear search",
+  "a11yClearSelection": "Clear selection",
+  "delete": "Delete",
+  "deleteAlarmQuestion": "Delete this alarm?",
+  "back": "Back",
+  "elapsedDuration": "{minutes, plural, =1{1 minute} other{{minutes} minutes}}, {seconds, plural, =1{1 second} other{{seconds} seconds}}",
+  "@elapsedDuration": {
+    "description": "Screen-reader label for the stopwatch time",
+    "placeholders": {
+      "minutes": {"type": "int"},
+      "seconds": {"type": "int"}
+    }
+  },
+  "weekStart": "Week starts on",
+  "weekStartHint": "First day shown in the alarm day picker"
+}
