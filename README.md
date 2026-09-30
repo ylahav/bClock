@@ -7,6 +7,10 @@ is closed.
 Built with Flutter and the [Plinth](https://pub.dev/packages/plinth_components)
 UI kit.
 
+| Light | Dark |
+|---|---|
+| ![bClock in light theme, analog and digital clock](docs/screenshots/clock-light.png) | ![bClock in dark theme, analog and digital clock](docs/screenshots/clock-dark.png) |
+
 ## Features
 
 - **Clock** — analog, digital, or both stacked, in three sizes. The window
