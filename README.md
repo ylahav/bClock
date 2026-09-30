@@ -1,17 +1,112 @@
-# bclock
+# bClock
 
-A new Flutter project.
+A minimalist desktop clock for Windows: an analog or digital clock that sizes its
+window to fit, a stopwatch, world clocks, and alarms that ring even when the app
+is closed.
 
-## Getting Started
+Built with Flutter and the [Plinth](https://pub.dev/packages/plinth_components)
+UI kit.
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+- **Clock** — analog, digital, or both stacked, in three sizes. The window
+  resizes itself to fit the clock, and the controls and bottom navigation can be
+  collapsed for a bare clock face. Optional *always on top*.
+- **Stopwatch** — with laps (fastest and slowest highlighted). A running
+  stopwatch keeps counting while the app is closed.
+- **World clocks** — pick cities from a list of 39; times are DST-aware and show
+  the local zone abbreviation (EST/EDT, CET/CEST…). Shown as analog, digital, or
+  both.
+- **Alarms** — repeat on chosen weekdays or fire once, with a label, a 5-minute
+  snooze, and a looping sound. They also fire when bClock isn't running (see
+  [How alarms work](#how-alarms-work)).
+- **Languages** — English, Spanish, French and Hebrew (right-to-left), or follow
+  the Windows language.
+- **Light and dark themes**, and a configurable first day of the week (Sunday or
+  Monday).
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+All settings are remembered between runs.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Requirements
+
+- Windows 10 or 11
+- [Flutter](https://docs.flutter.dev/get-started/install/windows) (stable
+  channel; developed on 3.47) with the **Desktop development with C++** workload
+  of Visual Studio installed
+
+Other platforms aren't built or supported.
+
+## Getting started
+
+```sh
+flutter pub get
+flutter run -d windows
+```
+
+| Task | Command |
+|---|---|
+| Static analysis | `flutter analyze` |
+| Tests | `flutter test` |
+| Release build | `flutter build windows --release` |
+| MSIX installer | `flutter pub run msix:create` |
+
+The release build lands in `build\windows\x64\runner\Release\`. The MSIX is
+configured under `msix_config:` in `pubspec.yaml` and is **unsigned** — to
+install it you must either sign it or enable sideloading of unsigned packages.
+
+## How alarms work
+
+Alarms fire through two independent paths:
+
+1. **While bClock is running**, it checks the alarm list every 10 seconds and
+   shows the alarm popup.
+2. **While bClock is closed**, each enabled alarm is also registered as a
+   Windows scheduled task named `bClock_alarm_<id>`, which launches
+   `bclock.exe --fire <id>`. The tasks are re-synced every time an alarm is
+   added, edited, toggled or deleted.
+
+To remove the scheduled tasks by hand (e.g. after uninstalling):
+
+```powershell
+Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm:$false
+```
+
+### Known limitations
+
+- An **MSIX-installed** bClock may be sandboxed from registering scheduled
+  tasks. The sync then fails silently and alarms only fire while the app is
+  open.
+- If bClock is already open when a scheduled alarm fires, Windows starts a
+  **second instance** to show it.
+
+## Project layout
+
+```
+lib/
+  main.dart               App entry, --fire handling, tab shell
+  providers/              AppProvider: all settings, persisted
+  screens/                Clock, Stopwatch, World, Alarms, Settings
+  services/               AlarmService (firing, snooze) and AlarmScheduler
+                          (Windows scheduled tasks)
+  models/                 AlarmModel, WorldCity
+  widgets/                AnalogClock, DigitalClock
+  theme/                  Plinth theme and brand colour
+  l10n/                   Translations (.arb) and generated localizations
+test/                     Widget tests
+windows/                  Windows runner
+```
+
+State lives in a single `AppProvider` (`provider` package) and is saved to
+`SharedPreferences`. For architecture details and conventions — window sizing,
+the alarm firing paths, theming rules — see [CLAUDE.md](CLAUDE.md).
+
+## Translations
+
+Strings live in `lib/l10n/app_<lang>.arb`, with English (`app_en.arb`) as the
+template. To add a language:
+
+1. Copy `app_en.arb` to `app_<code>.arb`, set `"@@locale"`, and translate the
+   values (the `@`-prefixed entries are metadata — don't copy them).
+2. Run `flutter gen-l10n` (it also runs as part of `flutter run`/`build`).
+3. Add the language to the picker list in
+   `lib/screens/settings_screen.dart`.
