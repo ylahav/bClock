@@ -23,7 +23,9 @@ class TimerService extends ChangeNotifier {
   static const String _kPausedLeft = 'timer.pausedLeftMs';
 
   static const Duration defaultDuration = Duration(minutes: 5);
-  static const Duration minDuration = Duration(minutes: 1);
+
+  /// Custom values may be any whole number of seconds (e.g. 1:30).
+  static const Duration minDuration = Duration(seconds: 1);
   static const Duration maxDuration = Duration(hours: 99);
   static const List<Duration> presets = [
     Duration(minutes: 1),
@@ -155,9 +157,12 @@ class TimerService extends ChangeNotifier {
   /// set duration while idle.
   void addMinute() => _adjust(const Duration(minutes: 1));
 
-  /// Takes a minute off the set duration (idle only, not below a minute).
+  /// Takes a minute off the set duration. Idle only, and only while more
+  /// than a minute is set, so it never lands on zero.
+  bool get canRemoveMinute => isIdle && _duration > const Duration(minutes: 1);
+
   void removeMinute() {
-    if (isIdle) _adjust(const Duration(minutes: -1));
+    if (canRemoveMinute) _adjust(const Duration(minutes: -1));
   }
 
   void _adjust(Duration delta) {

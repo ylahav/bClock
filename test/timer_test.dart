@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:plinth_blocks/plinth_blocks.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:bclock/l10n/app_localizations.dart';
@@ -111,8 +112,12 @@ void main() {
     await loadWith({});
     timer.setDuration(const Duration(minutes: 2));
     timer.removeMinute();
-    timer.removeMinute(); // already at the minimum
-    expect(timer.duration, TimerService.minDuration);
+    timer.removeMinute(); // at one minute: would reach zero
+    expect(timer.duration, const Duration(minutes: 1));
+    timer.setDuration(const Duration(seconds: 90));
+    timer.removeMinute(); // custom values go below a minute
+    expect(timer.duration, const Duration(seconds: 30));
+    timer.setDuration(const Duration(minutes: 1));
 
     timer.startOrResume();
     timer.addMinute();
@@ -186,5 +191,52 @@ void main() {
     ));
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a custom value is typed in the dialog; Enter sets it',
+      (tester) async {
+    await loadWith({});
+    await tester.pumpWidget(_app(const TimerScreen()));
+
+    // Tapping the time opens the dialog, focused on minutes.
+    // At the narrowest window, so the three fields must fit there too.
+    tester.view.physicalSize = const Size(240, 400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pump();
+    await tester.tap(find.text('05:00'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Set timer'), findsOneWidget);
+    final minutes = find.byType(TextField).at(1);
+    expect(tester.widget<TextField>(minutes).focusNode!.hasFocus, isTrue);
+
+    await tester.enterText(minutes, '1');
+    await tester.enterText(find.byType(TextField).at(2), '30');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Set timer'), findsNothing);
+    expect(timer.duration, const Duration(minutes: 1, seconds: 30));
+    expect(find.text('01:30'), findsOneWidget);
+    // Not a preset, so "Custom…" shows as the selection.
+    expect(
+      tester
+          .widget<PlinthChip>(find.widgetWithText(PlinthChip, 'Custom…'))
+          .selected,
+      isTrue,
+    );
+  });
+
+  testWidgets('the time is not editable while running', (tester) async {
+    await loadWith({});
+    await tester.pumpWidget(_app(const TimerScreen()));
+    timer.startOrResume();
+    await tester.pump();
+
+    await tester.tap(find.text('05:00'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.text('Set timer'), findsNothing);
+    timer.reset(); // before the pending-Timer check, which precedes tearDown
   });
 }

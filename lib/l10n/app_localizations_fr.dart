@@ -83,6 +83,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get timeLeft => 'Temps restant';
 
   @override
+  String get customDuration => 'Personnalisé…';
+
+  @override
+  String get setTimerTitle => 'Régler le minuteur';
+
+  @override
+  String get hours => 'Heures';
+
+  @override
+  String get minutes => 'Minutes';
+
+  @override
+  String get seconds => 'Secondes';
+
+  @override
   String get lapTime => 'Temps';
 
   @override

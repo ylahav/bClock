@@ -18,7 +18,8 @@ UI kit.
   collapsed for a bare clock face. Optional *always on top*.
 - **Stopwatch** — with laps (fastest and slowest highlighted). A running
   stopwatch keeps counting while the app is closed.
-- **Timer** — a countdown with presets (1 to 45 minutes) and ±1 minute. Like
+- **Timer** — a countdown with presets (1 to 45 minutes), a custom value in
+  hours, minutes and seconds (tap the time, or *Custom…*), and ±1 minute. Like
   the stopwatch it survives the app closing, and it rings even when bClock
   isn't running, the same way alarms do.
 - **World clocks** — pick cities from a list of 39; times are DST-aware and show

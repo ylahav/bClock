@@ -83,6 +83,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timeLeft => 'Time left';
 
   @override
+  String get customDuration => 'Custom…';
+
+  @override
+  String get setTimerTitle => 'Set timer';
+
+  @override
+  String get hours => 'Hours';
+
+  @override
+  String get minutes => 'Minutes';
+
+  @override
+  String get seconds => 'Seconds';
+
+  @override
   String get lapTime => 'Time';
 
   @override

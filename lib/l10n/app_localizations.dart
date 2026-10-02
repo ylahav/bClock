@@ -246,6 +246,36 @@ abstract class AppLocalizations {
   /// **'Time left'**
   String get timeLeft;
 
+  /// No description provided for @customDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom…'**
+  String get customDuration;
+
+  /// No description provided for @setTimerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set timer'**
+  String get setTimerTitle;
+
+  /// No description provided for @hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours'**
+  String get hours;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes'**
+  String get minutes;
+
+  /// No description provided for @seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds'**
+  String get seconds;
+
   /// No description provided for @lapTime.
   ///
   /// In en, this message translates to:

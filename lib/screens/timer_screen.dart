@@ -23,6 +23,8 @@ class _TimerScreenState extends State<TimerScreen> {
   static const _maxRing = 220.0;
   // The controls row: two lg icons, one xl icon, two 28px gaps.
   static const _controlsWidth = 208.0;
+  // Narrowest dialog body that fits hours / minutes / seconds in a row.
+  static const _fieldsRowWidth = 300.0;
 
   final _service = TimerService.instance;
   Timer? _ticker;
@@ -67,6 +69,96 @@ class _TimerScreenState extends State<TimerScreen> {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     return d.inHours > 0 ? '${d.inHours}:$m:$s' : '$m:$s';
+  }
+
+  /// Hours / minutes / seconds dialog for a value the presets don't have.
+  /// Focused on open; Enter in any field sets it, like the Save button.
+  Future<void> _editDuration() async {
+    final l = AppLocalizations.of(context);
+    final d = _service.duration;
+    var h = d.inHours;
+    var m = d.inMinutes.remainder(60);
+    var s = d.inSeconds.remainder(60);
+    Duration total() => Duration(hours: h, minutes: m, seconds: s);
+    Duration? result;
+    final modal = PlinthDisclosureController(initiallyOpen: true);
+
+    await PlinthModal(
+      controller: modal,
+      title: l.setTimerTitle,
+      size: PlinthSize.xs,
+      child: StatefulBuilder(
+        builder: (ctx, setDialog) {
+          void submit() {
+            if (total() <= Duration.zero) return;
+            result = total();
+            Navigator.pop(ctx);
+          }
+
+          Widget field(String label, int value, int max, bool focus,
+                  ValueChanged<int> set) =>
+              PlinthNumberInput(
+                label: label,
+                value: value,
+                min: 0,
+                max: max,
+                size: PlinthSize.sm,
+                autofocus: focus,
+                onChanged: (v) => setDialog(() => set(v.toInt())),
+                onSubmitted: (v) {
+                  set(v.toInt());
+                  submit();
+                },
+              );
+
+          final fields = [
+            field(l.hours, h, 99, false, (v) => h = v),
+            // Minutes is what people most often type.
+            field(l.minutes, m, 59, true, (v) => m = v),
+            field(l.seconds, s, 59, false, (v) => s = v),
+          ];
+
+          return PlinthStack(
+            children: [
+              // Side by side when there's room; stacked in a narrow
+              // window, where three steppers in a row don't fit.
+              LayoutBuilder(
+                builder: (context, box) => box.maxWidth >= _fieldsRowWidth
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final (i, f) in fields.indexed) ...[
+                            if (i > 0) const SizedBox(width: 8),
+                            Expanded(child: f),
+                          ],
+                        ],
+                      )
+                    : PlinthStack(gap: PlinthSize.xs, children: fields),
+              ),
+              PlinthGroup(
+                mainAxisAlignment: MainAxisAlignment.end,
+                gap: PlinthSize.sm,
+                children: [
+                  PlinthButton(
+                    variant: PlinthVariant.subtle,
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text(l.cancel),
+                  ),
+                  PlinthButton(
+                    onPressed: total() > Duration.zero ? submit : null,
+                    child: Text(l.save),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    ).show(context);
+    modal.dispose();
+
+    final picked = result;
+    if (picked != null) _service.setDuration(picked);
   }
 
   String _spoken(AppLocalizations l, Duration d) {
@@ -118,12 +210,17 @@ class _TimerScreenState extends State<TimerScreen> {
                     thickness: ring * 0.045,
                     color: theme.primaryColor,
                     semanticLabel: l.timeLeft,
-                    label: PlinthClock(
-                      _fmt(left),
-                      size: ring * (left.inHours > 0 ? 0.17 : 0.22),
-                      weight: FontWeight.w200,
-                      // Spoken as a duration, not read as a time of day.
-                      semanticLabel: _spoken(l, left),
+                    label: _TappableWhenIdle(
+                      // Idle: tap the time to type a custom one.
+                      onTap: s.isIdle ? _editDuration : null,
+                      tooltip: l.setTimerTitle,
+                      child: PlinthClock(
+                        _fmt(left),
+                        size: ring * (left.inHours > 0 ? 0.17 : 0.22),
+                        weight: FontWeight.w200,
+                        // Spoken as a duration, not read as a time of day.
+                        semanticLabel: _spoken(l, left),
+                      ),
                     ),
                   ),
                   if (s.isIdle) ...[
@@ -140,6 +237,13 @@ class _TimerScreenState extends State<TimerScreen> {
                             selected: s.duration == p,
                             onSelected: (_) => s.setDuration(p),
                           ),
+                        // Selected while the set value isn't a preset.
+                        PlinthChip(
+                          label: l.customDuration,
+                          size: PlinthSize.xs,
+                          selected: !TimerService.presets.contains(s.duration),
+                          onSelected: (_) => _editDuration(),
+                        ),
                       ],
                     ),
                   ],
@@ -151,6 +255,35 @@ class _TimerScreenState extends State<TimerScreen> {
           ),
         );
       }),
+    );
+  }
+}
+
+/// [child] as a button with a tooltip while [onTap] is set; plain otherwise.
+class _TappableWhenIdle extends StatelessWidget {
+  final VoidCallback? onTap;
+  final String tooltip;
+  final Widget child;
+
+  const _TappableWhenIdle({
+    required this.onTap,
+    required this.tooltip,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (onTap == null) return child;
+    return PlinthTooltip(
+      message: tooltip,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Semantics(
+          button: true,
+          hint: tooltip,
+          child: PlinthUnstyledButton(onPressed: onTap, child: child),
+        ),
+      ),
     );
   }
 }
@@ -175,9 +308,7 @@ class _Controls extends StatelessWidget {
             ? PlinthActionIcon(
                 semanticLabel: l.removeMinute,
                 icon: const Icon(Icons.remove),
-                onPressed: s.duration > TimerService.minDuration
-                    ? s.removeMinute
-                    : null,
+                onPressed: s.canRemoveMinute ? s.removeMinute : null,
                 variant: PlinthVariant.light,
                 color: 'gray',
                 size: PlinthSize.lg,

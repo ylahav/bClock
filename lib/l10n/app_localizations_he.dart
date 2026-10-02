@@ -83,6 +83,21 @@ class AppLocalizationsHe extends AppLocalizations {
   String get timeLeft => 'הזמן שנותר';
 
   @override
+  String get customDuration => 'מותאם…';
+
+  @override
+  String get setTimerTitle => 'הגדרת טיימר';
+
+  @override
+  String get hours => 'שעות';
+
+  @override
+  String get minutes => 'דקות';
+
+  @override
+  String get seconds => 'שניות';
+
+  @override
   String get lapTime => 'זמן';
 
   @override
