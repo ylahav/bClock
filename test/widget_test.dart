@@ -248,4 +248,31 @@ void main() {
     await AlarmService.instance.fireById('once');
     expect(schedulerSyncs, isEmpty);
   });
+
+  testWidgets('Alarm label dialog takes focus and saves on Enter',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'flutter.${AlarmService.alarmsStorageKey}':
+          jsonEncode([AlarmModel(id: 'l', hour: 9, minute: 0).toJson()]),
+    });
+    final provider = AppProvider();
+    await provider.load();
+    await AlarmService.instance.load();
+    await tester.pumpWidget(alarmApp(provider));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Add label…'));
+    await tester.pumpAndSettle();
+    // Focused on open: typing needs no click.
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.focusNode!.hasFocus, isTrue);
+
+    tester.testTextInput.enterText('Gym ');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TextField), findsNothing); // dialog closed
+    expect(find.text('Gym'), findsOneWidget);
+    expect(AlarmService.instance.alarms.single.label, 'Gym');
+  });
 }

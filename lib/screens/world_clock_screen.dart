@@ -368,8 +368,8 @@ class _AddCityPanelState extends State<_AddCityPanel> {
 
     return PlinthStack(
       children: [
-        // TODO(plinth): PlinthTextInput has no autofocus.
         PlinthTextInput(
+          autofocus: true,
           placeholder: AppLocalizations.of(context).searchCities,
           leadingIcon: const Icon(Icons.search),
           onChanged: (v) => setState(() => _query = v),

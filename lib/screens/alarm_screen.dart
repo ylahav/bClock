@@ -139,12 +139,16 @@ class _AlarmScreenState extends State<AlarmScreen> {
       child: Builder(
         builder: (ctx) => PlinthStack(
           children: [
-            // TODO(plinth): PlinthTextInput has no autofocus / onSubmitted,
-            // so Enter no longer saves and the field needs a click.
             PlinthTextInput(
               controller: controller,
               placeholder: l.labelPlaceholder,
               inputFormatters: [LengthLimitingTextInputFormatter(40)],
+              autofocus: true,
+              // Enter saves, like the Save button.
+              onSubmitted: (value) {
+                result = value.trim();
+                Navigator.pop(ctx);
+              },
             ),
             PlinthGroup(
               mainAxisAlignment: MainAxisAlignment.end,

@@ -369,10 +369,10 @@ packages:
     dependency: "direct main"
     description:
       name: plinth_components
-      sha256: "33e489ce18c2d233af20e19a1a1a83b33b16d01f4a612ea16d9848afecb02daa"
+      sha256: "0d336a94df72ac0b85e46341b2ca8990c1c4f882ece49627dabb1b3c7519dc9c"
       url: "https://pub.dev"
     source: hosted
-    version: "1.8.0"
+    version: "1.9.0"
   plinth_core:
     dependency: transitive
     description:
@@ -385,10 +385,10 @@ packages:
     dependency: "direct main"
     description:
       name: plinth_hooks
-      sha256: "98b58a48130e9b214b6762fa466206d6328c3baa6ad273a09fbae5b1f59bd970"
+      sha256: "8b62ee90f97fbf7fcab9a912c5d829b23435ae31edb3f280dd46c95dafebc728"
       url: "https://pub.dev"
     source: hosted
-    version: "1.8.0"
+    version: "1.9.0"
   plugin_platform_interface:
     dependency: transitive
     description:
