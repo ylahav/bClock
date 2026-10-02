@@ -69,6 +69,9 @@ class AlarmService extends ChangeNotifier {
 
   /// Call after the first frame, so a due alarm's popup has a Navigator.
   void start() {
+    // Re-register the tasks once per launch, so tasks from an older
+    // version pick up current settings without the user editing an alarm.
+    unawaited(syncScheduler(alarms));
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (_check()) _commit();
