@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:plinth_blocks/plinth_blocks.dart';
 
 import 'package:bclock/l10n/app_localizations.dart';
 import 'package:bclock/providers/app_provider.dart';
 import 'package:bclock/screens/settings_screen.dart';
 import 'package:bclock/screens/stopwatch_screen.dart';
+import 'package:bclock/screens/world_clock_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
 
 Widget _app(Widget home, {Locale? locale}) => MaterialApp(
       locale: locale,
@@ -153,5 +156,31 @@ void main() {
 
     expect(provider.languageCode, 'fr');
     expect(find.text("Langue de l'interface"), findsOneWidget);
+  });
+
+  testWidgets('World clock cities are restored and removals persist',
+      (tester) async {
+    tzdata.initializeTimeZones();
+    SharedPreferences.setMockInitialValues({
+      'flutter.world.cities': ['Europe/London', 'Asia/Tokyo'],
+    });
+    final provider = AppProvider();
+    await provider.load();
+    await tester.pumpWidget(ChangeNotifierProvider.value(
+      value: provider,
+      child: _app(const WorldClockScreen()),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('London'), findsOneWidget);
+    expect(find.text('Tokyo'), findsOneWidget);
+    expect(find.text('New York'), findsNothing); // a default, not saved
+
+    await tester.tap(find.byWidgetPredicate((w) =>
+        w is PlinthCloseButton && w.semanticLabel == 'Remove London'));
+    await tester.pumpAndSettle();
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getStringList('world.cities'), ['Asia/Tokyo']);
   });
 }

@@ -61,6 +61,7 @@ bClock is a minimalist **Windows desktop** Flutter app: analog/digital clock, st
 
 ### World clocks
 - `WorldCity` (`lib/models/world_city.dart`) holds a hard-coded `pool` and `defaults`. Each entry stores an **IANA zone id** (`tz`, e.g. `America/New_York`) — no cached offset. Time is resolved via `tz.TZDateTime.from(utcNow, tz.getLocation(city.tz))`, which is DST-aware; the abbreviation shown in the UI comes from `TZDateTime.timeZoneName` (so "EST" flips to "EDT" automatically). tzdata is initialized once in `main.dart` via `timezone/data/latest_all.dart`. `==`/`hashCode` keys on `(city, country)`.
+- The shown cities persist as a list of `tz` ids under `world.cities` (resolved back through `pool`, so `tz` must stay unique within `pool`; unknown ids are dropped). Key missing = first run → `defaults`; an empty list is a valid saved state.
 
 ## Conventions
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:plinth_blocks/plinth_blocks.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../l10n/app_localizations.dart';
 import '../models/world_city.dart';
@@ -31,6 +32,8 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
   static const _gridBottomPad = 12.0;
   // Room for a card's header + footer and a legible clock.
   static const _minCardHeight = 110.0;
+  // IANA zone ids of the shown cities, in display order.
+  static const String _kCities = 'world.cities';
 
   late DateTime _utcNow;
   late Timer _timer;
@@ -41,6 +44,7 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
   void initState() {
     super.initState();
     _utcNow = DateTime.now().toUtc();
+    _load();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() => _utcNow = DateTime.now().toUtc());
     });
@@ -52,11 +56,33 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
     super.dispose();
   }
 
+  // ── Persistence ───────────────────────────────────────────
+
+  Future<void> _load() async {
+    final p = await SharedPreferences.getInstance();
+    final ids = p.getStringList(_kCities);
+    // Key missing = first run: keep the defaults. An empty list is a valid
+    // saved state (the user removed every city).
+    if (ids == null || !mounted) return;
+    final byTz = {for (final c in WorldCity.pool) c.tz: c};
+    setState(() {
+      _active
+        ..clear()
+        ..addAll(ids.map((id) => byTz[id]).whereType<WorldCity>());
+    });
+  }
+
+  Future<void> _save() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setStringList(_kCities, _active.map((c) => c.tz).toList());
+  }
+
   tz.TZDateTime _cityTime(WorldCity city) =>
       tz.TZDateTime.from(_utcNow, tz.getLocation(city.tz));
 
   void _removeCity(WorldCity city) {
     setState(() => _active.remove(city));
+    _save();
   }
 
   Future<void> _showAddDialog() async {
@@ -71,7 +97,10 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
       size: PlinthSize.xs,
       child: _AddCityPanel(
         available: available,
-        onAdd: (city) => setState(() => _active.add(city)),
+        onAdd: (city) {
+          setState(() => _active.add(city));
+          _save();
+        },
       ),
     ).show(context);
     modal.dispose();
