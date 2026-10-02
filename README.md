@@ -107,8 +107,7 @@ windows/                  Windows runner
 ```
 
 State lives in a single `AppProvider` (`provider` package) and is saved to
-`SharedPreferences`. For architecture details and conventions — window sizing,
-the alarm firing paths, theming rules — see [CLAUDE.md](CLAUDE.md).
+`SharedPreferences`.
 
 ## Translations
 
