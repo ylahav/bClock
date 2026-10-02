@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-bClock is a minimalist **Windows desktop** Flutter app: analog/digital clock, stopwatch, world clocks, and alarms. Primary target is Windows (see `windows/` and MSIX packaging in `pubspec.yaml`); other platforms are not currently built.
+bClock is a minimalist **Windows desktop** Flutter app: analog/digital clock, stopwatch, world clocks, and alarms. Primary target is Windows (see `windows/` and `installer/`); other platforms are not currently built.
 
 ## Commands
 
@@ -12,7 +12,8 @@ bClock is a minimalist **Windows desktop** Flutter app: analog/digital clock, st
 - Static analysis / lint: `flutter analyze`
 - Tests: `flutter test` (single file: `flutter test test/widget_test.dart`)
 - Release build: `flutter build windows --release`
-- MSIX installer: `flutter pub run msix:create` (config lives under `msix_config:` in `pubspec.yaml`; unsigned by default)
+- Installer: `iscc /DAppVersion=<pubspec version> installer\bclock.iss` after the release build → `build\installer\bClock_Setup_<version>.exe` (Inno Setup 6, per-user install; CI builds it on `main`). This is the recommended distribution: a plain folder install lets the alarm scheduled tasks run `bclock.exe` directly. Keep its `AppId` fixed, and keep its `[UninstallRun]` task pattern in step with `AlarmScheduler.taskPrefix`.
+- MSIX package: `dart run msix:create` (config lives under `msix_config:` in `pubspec.yaml`; needs a trusted signing certificate to install)
 - Fetch deps: `flutter pub get`
 
 ## Architecture

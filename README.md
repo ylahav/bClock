@@ -52,11 +52,22 @@ flutter run -d windows
 | Static analysis | `flutter analyze` |
 | Tests | `flutter test` |
 | Release build | `flutter build windows --release` |
-| MSIX installer | `flutter pub run msix:create` |
+| Installer (`setup.exe`) | `iscc /DAppVersion=1.1.0 installer\bclock.iss` |
+| MSIX package | `dart run msix:create` |
 
-The release build lands in `build\windows\x64\runner\Release\`. The MSIX is
-configured under `msix_config:` in `pubspec.yaml` and is **unsigned** — to
-install it you must either sign it or enable sideloading of unsigned packages.
+The release build lands in `build\windows\x64\runner\Release\`.
+
+**Installer (recommended).** [`installer/bclock.iss`](installer/bclock.iss)
+packages the release build with [Inno Setup 6](https://jrsoftware.org/isinfo.php)
+into `build\installer\bClock_Setup_<version>.exe`. Build the release first;
+pass the version from `pubspec.yaml`. It installs per user without an admin
+prompt, adds a Start menu entry, and its uninstaller also removes the alarm
+scheduled tasks. Unsigned, so SmartScreen warns about an unknown publisher.
+CI builds it on every push to `main` (artifact `bclock-setup-<sha>`).
+
+**MSIX.** Configured under `msix_config:` in `pubspec.yaml`. Windows only
+installs it when it is signed with a certificate the machine trusts, and
+alarms may not fire while the app is closed (see below).
 
 ## How alarms work
 
@@ -69,7 +80,10 @@ Alarms fire through two independent paths:
    `bclock.exe --fire <id>`. The tasks are re-synced every time an alarm is
    added, edited, toggled or deleted.
 
-To remove the scheduled tasks by hand (e.g. after uninstalling):
+If bClock is already open when a task fires, the launch is handed to the
+running window instead of starting a second copy.
+
+The `setup.exe` uninstaller removes the tasks. To remove them by hand:
 
 ```powershell
 Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm:$false
@@ -80,8 +94,6 @@ Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm
 - An **MSIX-installed** bClock may be sandboxed from registering scheduled
   tasks. The sync then fails silently and alarms only fire while the app is
   open.
-- If bClock is already open when a scheduled alarm fires, Windows starts a
-  **second instance** to show it.
 
 ## Project layout
 
