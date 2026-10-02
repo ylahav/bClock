@@ -52,14 +52,16 @@ flutter run -d windows
 | Static analysis | `flutter analyze` |
 | Tests | `flutter test` |
 | Release build | `flutter build windows --release` |
-| Installer (`setup.exe`) | `iscc /DAppVersion=1.1.0 installer\bclock.iss` |
+| Installer (`setup.exe`) | `.\installer\build.ps1` |
 
 The release build lands in `build\windows\x64\runner\Release\`.
 
 **Installer.** [`installer/bclock.iss`](installer/bclock.iss)
 packages the release build with [Inno Setup 6](https://jrsoftware.org/isinfo.php)
-into `build\installer\bClock_Setup_<version>.exe`. Build the release first;
-pass the version from `pubspec.yaml`. It installs per user without an admin
+into `build\installer\bClock_Setup_<version>.exe`.
+[`installer/build.ps1`](installer/build.ps1) does it in one step: it runs the
+release build, then compiles the installer with the version from
+`pubspec.yaml` (`-SkipBuild` reuses an existing build). It installs per user without an admin
 prompt, adds a Start menu entry, and its uninstaller also removes the alarm
 scheduled tasks. Unsigned, so SmartScreen warns about an unknown publisher.
 CI builds it on every push to `main` (artifact `bclock-setup-<sha>`).

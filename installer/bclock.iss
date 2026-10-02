@@ -1,7 +1,9 @@
 ; bClock installer (Inno Setup 6). Packages the Flutter release build:
 ;
-;   flutter build windows --release
-;   iscc /DAppVersion=1.1.0 installer\bclock.iss
+;   .\installer\build.ps1
+;
+; which runs `flutter build windows --release`, then
+; `iscc /DAppVersion=<pubspec version> installer\bclock.iss`.
 ;
 ; Output: build\installer\bClock_Setup_<version>.exe
 ;
@@ -50,7 +52,10 @@ Name: "he"; MessagesFile: "compiler:Languages\Hebrew.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "{#BuildDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
+; The Release folder is only ever added to, never cleaned, so locally it can
+; hold leftovers that must not ship: *.msix from the old MSIX packaging, and
+; kernel_blob.bin from a debug build (a release build runs data\app.so).
+Source: "{#BuildDir}\*"; DestDir: "{app}"; Excludes: "*.pdb,*.msix,kernel_blob.bin"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\bClock"; Filename: "{app}\{#AppExe}"
