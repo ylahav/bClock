@@ -6,8 +6,6 @@ import '../models/alarm_model.dart';
 /// a no-op.
 ///
 /// Caveats:
-///  - MSIX-packaged builds run in an app container; `Register-ScheduledTask`
-///    may be denied. Failure is silent (fire-and-forget by the caller).
 ///  - Tasks fire only when the user is logged in (default trigger settings).
 ///  - When a task fires and bClock is already running, the Windows runner
 ///    forwards `--fire <id>` to the running instance (see single_instance.h).

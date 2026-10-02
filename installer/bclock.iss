@@ -7,8 +7,8 @@
 ;
 ; Installs per user by default (no admin prompt) into
 ; %LOCALAPPDATA%\Programs\bClock; the user can opt into all-users instead.
-; A plain folder install, unlike MSIX, lets the alarm scheduled tasks
-; launch bclock.exe --fire <id> directly.
+; A plain folder install lets the alarm scheduled tasks launch
+; bclock.exe --fire <id> directly.
 
 #ifndef AppVersion
   #define AppVersion "0.0.0"
@@ -50,8 +50,7 @@ Name: "he"; MessagesFile: "compiler:Languages\Hebrew.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; msix:create writes its package into the same folder.
-Source: "{#BuildDir}\*"; DestDir: "{app}"; Excludes: "*.pdb,*.msix"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#BuildDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\bClock"; Filename: "{app}\{#AppExe}"

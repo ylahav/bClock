@@ -53,21 +53,16 @@ flutter run -d windows
 | Tests | `flutter test` |
 | Release build | `flutter build windows --release` |
 | Installer (`setup.exe`) | `iscc /DAppVersion=1.1.0 installer\bclock.iss` |
-| MSIX package | `dart run msix:create` |
 
 The release build lands in `build\windows\x64\runner\Release\`.
 
-**Installer (recommended).** [`installer/bclock.iss`](installer/bclock.iss)
+**Installer.** [`installer/bclock.iss`](installer/bclock.iss)
 packages the release build with [Inno Setup 6](https://jrsoftware.org/isinfo.php)
 into `build\installer\bClock_Setup_<version>.exe`. Build the release first;
 pass the version from `pubspec.yaml`. It installs per user without an admin
 prompt, adds a Start menu entry, and its uninstaller also removes the alarm
 scheduled tasks. Unsigned, so SmartScreen warns about an unknown publisher.
 CI builds it on every push to `main` (artifact `bclock-setup-<sha>`).
-
-**MSIX.** Configured under `msix_config:` in `pubspec.yaml`. Windows only
-installs it when it is signed with a certificate the machine trusts, and
-alarms may not fire while the app is closed (see below).
 
 ## How alarms work
 
@@ -91,9 +86,8 @@ Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm
 
 ### Known limitations
 
-- An **MSIX-installed** bClock may be sandboxed from registering scheduled
-  tasks. The sync then fails silently and alarms only fire while the app is
-  open.
+- Alarms fire while bClock is closed only when the user is **logged in**
+  (the scheduled tasks use the default trigger settings).
 
 ## Project layout
 

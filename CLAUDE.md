@@ -12,8 +12,7 @@ bClock is a minimalist **Windows desktop** Flutter app: analog/digital clock, st
 - Static analysis / lint: `flutter analyze`
 - Tests: `flutter test` (single file: `flutter test test/widget_test.dart`)
 - Release build: `flutter build windows --release`
-- Installer: `iscc /DAppVersion=<pubspec version> installer\bclock.iss` after the release build → `build\installer\bClock_Setup_<version>.exe` (Inno Setup 6, per-user install; CI builds it on `main`). This is the recommended distribution: a plain folder install lets the alarm scheduled tasks run `bclock.exe` directly. Keep its `AppId` fixed, and keep its `[UninstallRun]` task pattern in step with `AlarmScheduler.taskPrefix`.
-- MSIX package: `dart run msix:create` (config lives under `msix_config:` in `pubspec.yaml`; needs a trusted signing certificate to install)
+- Installer: `iscc /DAppVersion=<pubspec version> installer\bclock.iss` after the release build → `build\installer\bClock_Setup_<version>.exe` (Inno Setup 6, per-user install; CI builds it on `main`). This is the only distribution; MSIX was dropped because its app container can block the alarm scheduled tasks. Keep its `AppId` fixed, and keep its `[UninstallRun]` task pattern in step with `AlarmScheduler.taskPrefix`.
 - Fetch deps: `flutter pub get`
 
 ## Architecture
@@ -45,7 +44,6 @@ bClock is a minimalist **Windows desktop** Flutter app: analog/digital clock, st
 - Persistence: only `AlarmService` reads/writes the JSON list in `SharedPreferences` under `AlarmService.alarmsStorageKey` (`'alarms'`). On first run (key missing, `hasSavedAlarms` false) `AlarmScreen` seeds two localized default alarms after its first frame; after that an empty list is a valid persisted state.
 - `AlarmModel.days` is **always stored Monday-first** (index = `DateTime.weekday - 1`); the polling loop and the scheduler's `-DaysOfWeek` both depend on that. The user's week-start setting (`AppProvider.weekStart`, Sunday or Monday) only changes the display order in the alarm day picker, via `WeekStart.dayOrder` — never re-index stored data.
 - Sound plays in loop mode via `audioplayers` using the asset `assets/sounds/alarm.wav`; dismiss stops it.
-- **Known caveat:** MSIX-packaged builds may be sandboxed and unable to register scheduled tasks — the sync fails silently.
 
 ### Theming
 - UI is built on **Plinth** (`plinth_components`, published on pub.dev; source at `../plinth_ui`). `AppTheme` (`lib/theme/app_theme.dart`) builds a `PlinthTheme` with a `'brand'` ramp anchored to `AppTheme.brandColor` (`#2196F3`) as `primaryColor`, registers it as a `ThemeData` extension, and derives Material's `ColorScheme` from it via `toColorScheme()` so the remaining Material widgets agree. Scaffold / nav / app-bar backgrounds are hard-coded greys (`0xFFF8F9FA` / `0xFF111111`) — keep that if you touch the theme.
