@@ -13,6 +13,7 @@ import 'package:bclock/screens/alarm_screen.dart';
 import 'package:bclock/screens/clock_screen.dart';
 import 'package:bclock/services/alarm_scheduler.dart';
 import 'package:bclock/services/alarm_service.dart';
+import 'package:bclock/services/app_window.dart';
 import 'package:bclock/screens/settings_screen.dart';
 import 'package:bclock/screens/stopwatch_screen.dart';
 import 'package:bclock/screens/world_clock_screen.dart';
@@ -28,6 +29,7 @@ Widget _app(Widget home, {Locale? locale}) => MaterialApp(
     );
 
 void main() {
+  AppWindow.raise = () async {}; // no window plugin in tests
   // No real window under test: record the runner's window calls instead.
   final windowCalls = <MethodCall>[];
   // Never touch the real scheduled tasks or the audio plugin.

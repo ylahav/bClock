@@ -7,9 +7,6 @@ up. Items move to **Done** with the PR that shipped them.
 
 - ⭐ **Meeting planner** in World clocks: a time slider that shows every city
   at that moment, with working hours highlighted.
-- **Keep running in the tray.** Closing the window currently quits the app, so
-  after that only the scheduled tasks can fire alarms. A tray icon would keep
-  alarms, snooze and the stopwatch alive.
 - **Make scheduler failures visible.** Each alarm change re-registers all tasks
   through a hidden PowerShell and ignores errors. Sync once edits settle, and
   warn when it fails, so an alarm never silently won't ring.
@@ -37,6 +34,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Keep running in the tray: closing hides bClock (setting, on by default);
+  tray icon shows it, right-click to quit; a ring brings the window back.
 - Windows notifications for a ringing alarm or timer, with Snooze / +1 min /
   Dismiss on the toast; answering either the toast or the popup ends both.
 - Countdown timer tab: presets, ±1 min, survives restarts, rings with bClock

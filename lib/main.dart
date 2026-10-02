@@ -11,6 +11,7 @@ import 'providers/app_provider.dart';
 import 'services/alarm_service.dart';
 import 'services/notification_service.dart';
 import 'services/timer_service.dart';
+import 'services/tray_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/clock_screen.dart';
 import 'screens/stopwatch_screen.dart';
@@ -52,6 +53,10 @@ void main(List<String> args) async {
   // here: TimerService.start rings a timer that ended moments ago.)
   final fireId = _parseFireArg(args);
   WidgetsBinding.instance.addPostFrameCallback((_) {
+    TrayService.instance.init(
+      closeToTray: appProvider.closeToTray,
+      strings: AlarmService.instance.strings(),
+    );
     AlarmService.instance.start();
     TimerService.instance.start();
     if (fireId != null) AlarmService.instance.fireById(fireId);
@@ -129,6 +134,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The tray menu, outside the widget tree, follows the UI language.
+    TrayService.instance.setStrings(AppLocalizations.of(context));
+  }
 
   @override
   Widget build(BuildContext context) {

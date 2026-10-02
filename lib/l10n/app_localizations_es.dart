@@ -246,6 +246,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String get alwaysOnTopHint => 'Mantener bClock sobre las demás ventanas';
 
   @override
+  String get closeToTray => 'Seguir en la bandeja';
+
+  @override
+  String get closeToTrayHint =>
+      'Al cerrar la ventana, bClock se oculta en la bandeja y las alarmas y temporizadores siguen funcionando';
+
+  @override
+  String get trayShow => 'Mostrar bClock';
+
+  @override
+  String get trayQuit => 'Salir';
+
+  @override
+  String get trayHintTitle => 'bClock sigue en marcha';
+
+  @override
+  String get trayHintBody =>
+      'Las alarmas y los temporizadores siguen funcionando. Haz clic derecho en el icono de la bandeja para salir.';
+
+  @override
   String get sectionLanguage => 'Idioma';
 
   @override

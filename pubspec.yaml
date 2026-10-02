@@ -21,6 +21,7 @@ dependencies:
   plinth_hooks: 1.10.0
   plinth_blocks: 0.4.0
   flutter_local_notifications: ^22.3.1
+  tray_manager: ^0.7.0
 
 dev_dependencies:
   flutter_test:

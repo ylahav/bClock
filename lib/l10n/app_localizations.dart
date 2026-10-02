@@ -558,6 +558,42 @@ abstract class AppLocalizations {
   /// **'Keep bClock above all other windows'**
   String get alwaysOnTopHint;
 
+  /// No description provided for @closeToTray.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep running in the tray'**
+  String get closeToTray;
+
+  /// No description provided for @closeToTrayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing the window hides bClock in the tray, so alarms and timers keep working'**
+  String get closeToTrayHint;
+
+  /// No description provided for @trayShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show bClock'**
+  String get trayShow;
+
+  /// No description provided for @trayQuit.
+  ///
+  /// In en, this message translates to:
+  /// **'Quit'**
+  String get trayQuit;
+
+  /// No description provided for @trayHintTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'bClock is still running'**
+  String get trayHintTitle;
+
+  /// No description provided for @trayHintBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarms and timers keep working. Right-click the tray icon to quit.'**
+  String get trayHintBody;
+
   /// No description provided for @sectionLanguage.
   ///
   /// In en, this message translates to:

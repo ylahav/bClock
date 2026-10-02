@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:window_manager/window_manager.dart';
+import 'app_window.dart';
 
 /// Windows toasts for a ringing alarm or timer, with action buttons.
 ///
@@ -20,11 +20,6 @@ class NotificationService {
   /// Keep in step with the `[Registry]` entries in installer/bclock.iss.
   static const String appUserModelId = 'bClock.bClock';
   static const String _activatorGuid = '2ba2c34c-4786-42b2-aab2-988855266b56';
-
-  /// Brings bClock to the front; replaced in tests (no window plugin).
-  @visibleForTesting
-  Future<void> Function() raiseWindow =
-      () => windowManager.show().then((_) => windowManager.focus());
 
   final _plugin = FlutterLocalNotificationsPlugin();
   final _onAction = <int, ValueChanged<String>>{};
@@ -107,7 +102,7 @@ class NotificationService {
   /// the toast body.
   @visibleForTesting
   void handleResponse(int? id, String? actionId) {
-    unawaited(raiseWindow());
+    unawaited(AppWindow.raise());
     if (id == null || actionId == null || actionId.isEmpty) return;
     _onAction.remove(id)?.call(actionId);
   }

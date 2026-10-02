@@ -246,6 +246,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get alwaysOnTopHint => 'Garder bClock au-dessus des autres fenêtres';
 
   @override
+  String get closeToTray => 'Rester dans la zone de notification';
+
+  @override
+  String get closeToTrayHint =>
+      'Fermer la fenêtre masque bClock dans la zone de notification ; alarmes et minuteurs continuent';
+
+  @override
+  String get trayShow => 'Afficher bClock';
+
+  @override
+  String get trayQuit => 'Quitter';
+
+  @override
+  String get trayHintTitle => 'bClock fonctionne toujours';
+
+  @override
+  String get trayHintBody =>
+      'Les alarmes et minuteurs continuent. Clic droit sur l\'icône de la zone de notification pour quitter.';
+
+  @override
   String get sectionLanguage => 'Langue';
 
   @override

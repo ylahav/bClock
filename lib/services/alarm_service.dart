@@ -6,6 +6,7 @@ import 'package:plinth_components/plinth_components.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm_model.dart';
+import 'app_window.dart';
 import 'notification_service.dart';
 import 'alarm_scheduler.dart';
 
@@ -222,6 +223,8 @@ class AlarmService extends ChangeNotifier {
     }
 
     await startSound();
+    // Show the window (it may be hidden in the tray) so the popup is seen.
+    unawaited(AppWindow.raise());
     final byKey = {for (final a in actions) a.key: a};
     unawaited(notifications.show(
       id,

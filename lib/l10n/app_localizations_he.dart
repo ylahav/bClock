@@ -246,6 +246,26 @@ class AppLocalizationsHe extends AppLocalizations {
   String get alwaysOnTopHint => 'השארת bClock מעל כל החלונות האחרים';
 
   @override
+  String get closeToTray => 'המשך לפעול במגש המערכת';
+
+  @override
+  String get closeToTrayHint =>
+      'סגירת החלון מסתירה את bClock במגש המערכת, כך שהשעונים המעוררים והטיימרים ממשיכים לפעול';
+
+  @override
+  String get trayShow => 'הצגת bClock';
+
+  @override
+  String get trayQuit => 'יציאה';
+
+  @override
+  String get trayHintTitle => 'bClock עדיין פועל';
+
+  @override
+  String get trayHintBody =>
+      'השעונים המעוררים והטיימרים ממשיכים לפעול. ליציאה, לחיצה ימנית על הסמל במגש המערכת.';
+
+  @override
   String get sectionLanguage => 'שפה';
 
   @override

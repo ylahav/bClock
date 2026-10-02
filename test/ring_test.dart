@@ -7,16 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bclock/l10n/app_localizations.dart';
 import 'package:bclock/models/alarm_model.dart';
 import 'package:bclock/services/alarm_service.dart';
+import 'package:bclock/services/app_window.dart';
 import 'package:bclock/services/notification_service.dart';
 import 'package:bclock/services/timer_service.dart';
 
 /// Records toasts instead of showing them; [press] stands in for a click on
 /// a toast button.
 class FakeNotifications extends NotificationService {
-  FakeNotifications() {
-    raiseWindow = () async {};
-  }
-
   final shown = <int, ({String title, String body, List<String> keys})>{};
   final cancelled = <int>[];
 
@@ -60,7 +57,13 @@ void main() {
     ..navigatorKey = navigatorKey
     ..syncScheduler = (_) async {};
 
+  var raised = 0;
+  AppWindow.raise = () async {
+    raised++;
+  };
+
   setUp(() {
+    raised = 0;
     toasts = FakeNotifications();
     NotificationService.instance = toasts;
     silenced = 0;
@@ -94,6 +97,7 @@ void main() {
     expect(toast.body, '07:15');
     expect(toast.keys, ['snooze', 'dismiss']);
     expect(find.text('07:15'), findsOneWidget); // the popup, too
+    expect(raised, 1); // shown even if it was hidden in the tray
 
     toasts.press(toasts.lastId, 'dismiss');
     await tester.pumpAndSettle();

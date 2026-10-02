@@ -30,6 +30,9 @@ UI kit.
   notification, so it's seen behind other windows; Snooze, +1 min and Dismiss
   work from the notification too. They also fire when bClock isn't running (see
   [How alarms work](#how-alarms-work)).
+- **Tray** — closing the window hides bClock in the system tray, so alarms,
+  snooze, the timer and the stopwatch keep running. Click the tray icon to
+  show it; right-click to quit. Can be turned off in Settings.
 - **Languages** — English, Spanish, French and Hebrew (right-to-left), or follow
   the Windows language.
 - **Light and dark themes**, and a configurable first day of the week (Sunday or

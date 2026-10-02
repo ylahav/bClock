@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
+import '../services/tray_service.dart';
 
 enum ClockView { analog, digital, both }
 
@@ -28,6 +29,7 @@ class AppProvider extends ChangeNotifier {
   static const _kPos = 'digitalPosition';
   static const _kSize = 'clockSize';
   static const _kOnTop = 'alwaysOnTop';
+  static const _kCloseToTray = 'closeToTray';
   static const _kShowNav = 'showNav';
   static const _kLocale = 'locale';
   static const _kWeekStart = 'weekStart';
@@ -37,6 +39,7 @@ class AppProvider extends ChangeNotifier {
   DigitalPosition _digitalPosition = DigitalPosition.below;
   ClockSizeOption _clockSize = ClockSizeOption.medium;
   bool _alwaysOnTop = false;
+  bool _closeToTray = true;
   bool _showNav = true;
   WeekStart _weekStart = WeekStart.monday;
 
@@ -48,6 +51,10 @@ class AppProvider extends ChangeNotifier {
   DigitalPosition get digitalPosition => _digitalPosition;
   ClockSizeOption get clockSize => _clockSize;
   bool get alwaysOnTop => _alwaysOnTop;
+
+  /// Whether closing the window hides bClock in the tray (on by default)
+  /// rather than quitting. Applied by TrayService.
+  bool get closeToTray => _closeToTray;
   bool get showNav => _showNav;
   WeekStart get weekStart => _weekStart;
   bool get isDark => _themeMode == ThemeMode.dark;
@@ -63,6 +70,7 @@ class AppProvider extends ChangeNotifier {
     _clockSize = ClockSizeOption
         .values[p.getInt(_kSize) ?? ClockSizeOption.medium.index];
     _alwaysOnTop = p.getBool(_kOnTop) ?? false;
+    _closeToTray = p.getBool(_kCloseToTray) ?? true;
     _showNav = p.getBool(_kShowNav) ?? true;
     _languageCode = p.getString(_kLocale);
     _weekStart =
@@ -91,6 +99,7 @@ class AppProvider extends ChangeNotifier {
       p.setInt(_kPos, _digitalPosition.index),
       p.setInt(_kSize, _clockSize.index),
       p.setBool(_kOnTop, _alwaysOnTop),
+      p.setBool(_kCloseToTray, _closeToTray),
       p.setBool(_kShowNav, _showNav),
       p.setInt(_kWeekStart, _weekStart.index),
       _languageCode == null
@@ -127,6 +136,13 @@ class AppProvider extends ChangeNotifier {
   Future<void> setAlwaysOnTop(bool value) async {
     _alwaysOnTop = value;
     await windowManager.setAlwaysOnTop(value);
+    notifyListeners();
+    _save();
+  }
+
+  Future<void> setCloseToTray(bool value) async {
+    _closeToTray = value;
+    await TrayService.instance.setCloseToTray(value);
     notifyListeners();
     _save();
   }

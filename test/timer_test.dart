@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:bclock/l10n/app_localizations.dart';
 import 'package:bclock/screens/timer_screen.dart';
 import 'package:bclock/services/alarm_service.dart';
+import 'package:bclock/services/app_window.dart';
 import 'package:bclock/services/timer_service.dart';
 
 Widget _app(Widget home) => MaterialApp(
@@ -15,6 +16,7 @@ Widget _app(Widget home) => MaterialApp(
     );
 
 void main() {
+  AppWindow.raise = () async {}; // no window plugin in tests
   final timer = TimerService.instance;
   // Never touch real scheduled tasks or the audio plugin.
   final scheduled = <DateTime?>[];

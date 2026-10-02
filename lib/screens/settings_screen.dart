@@ -131,6 +131,15 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
 
+          _SwitchBlock(
+            child: PlinthSwitch(
+              label: l.closeToTray,
+              description: l.closeToTrayHint,
+              value: p.closeToTray,
+              onChanged: p.setCloseToTray,
+            ),
+          ),
+
           const _Divider(),
 
           // ── Language ──────────────────────────────────────

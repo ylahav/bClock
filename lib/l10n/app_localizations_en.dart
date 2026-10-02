@@ -246,6 +246,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alwaysOnTopHint => 'Keep bClock above all other windows';
 
   @override
+  String get closeToTray => 'Keep running in the tray';
+
+  @override
+  String get closeToTrayHint =>
+      'Closing the window hides bClock in the tray, so alarms and timers keep working';
+
+  @override
+  String get trayShow => 'Show bClock';
+
+  @override
+  String get trayQuit => 'Quit';
+
+  @override
+  String get trayHintTitle => 'bClock is still running';
+
+  @override
+  String get trayHintBody =>
+      'Alarms and timers keep working. Right-click the tray icon to quit.';
+
+  @override
   String get sectionLanguage => 'Language';
 
   @override
