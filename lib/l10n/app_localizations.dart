@@ -114,6 +114,12 @@ abstract class AppLocalizations {
   /// **'Stopwatch'**
   String get navStopwatch;
 
+  /// No description provided for @navTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer'**
+  String get navTimer;
+
   /// No description provided for @navWorld.
   ///
   /// In en, this message translates to:
@@ -191,6 +197,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start'**
   String get start;
+
+  /// No description provided for @timerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer'**
+  String get timerTitle;
+
+  /// No description provided for @resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resume;
+
+  /// No description provided for @timesUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Time\'s up'**
+  String get timesUp;
+
+  /// No description provided for @plusOneMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'+1 min'**
+  String get plusOneMinute;
+
+  /// No description provided for @addMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'Add 1 minute'**
+  String get addMinute;
+
+  /// No description provided for @removeMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove 1 minute'**
+  String get removeMinute;
+
+  /// No description provided for @presetMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String presetMinutes(int minutes);
+
+  /// No description provided for @timeLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Time left'**
+  String get timeLeft;
 
   /// No description provided for @lapTime.
   ///

@@ -15,6 +15,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get navStopwatch => 'סטופר';
 
   @override
+  String get navTimer => 'טיימר';
+
+  @override
   String get navWorld => 'עולם';
 
   @override
@@ -52,6 +55,32 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get start => 'התחלה';
+
+  @override
+  String get timerTitle => 'טיימר';
+
+  @override
+  String get resume => 'המשך';
+
+  @override
+  String get timesUp => 'הזמן נגמר';
+
+  @override
+  String get plusOneMinute => '+1 דק׳';
+
+  @override
+  String get addMinute => 'הוספת דקה';
+
+  @override
+  String get removeMinute => 'הפחתת דקה';
+
+  @override
+  String presetMinutes(int minutes) {
+    return '$minutes דק׳';
+  }
+
+  @override
+  String get timeLeft => 'הזמן שנותר';
 
   @override
   String get lapTime => 'זמן';

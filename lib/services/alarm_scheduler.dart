@@ -15,6 +15,10 @@ import '../models/alarm_model.dart';
 class AlarmScheduler {
   static const String taskPrefix = 'bClock_alarm_';
 
+  /// The countdown timer's task. Outside [taskPrefix] on purpose: [sync]
+  /// wipes every `bClock_alarm_*` task on each alarm change.
+  static const String timerTaskName = 'bClock_timer';
+
   static const List<String> _dayFull = [
     'Monday',
     'Tuesday',
@@ -42,8 +46,19 @@ class AlarmScheduler {
     final enabled = alarms.where((a) => a.isEnabled).toList();
     final exe = Platform.resolvedExecutable;
     final workDir = File(exe).parent.path;
-    final script = _buildScript(enabled, exe, workDir);
+    await _run(_buildScript(enabled, exe, workDir));
+  }
 
+  /// Registers the countdown timer's task to launch `bclock.exe
+  /// --timer-done` at [endAt], or removes it when [endAt] is null.
+  /// Fire-and-forget; errors are swallowed.
+  static Future<void> syncTimer(DateTime? endAt) async {
+    if (!Platform.isWindows) return;
+    final exe = Platform.resolvedExecutable;
+    await _run(timerCommand(endAt, exe, File(exe).parent.path));
+  }
+
+  static Future<void> _run(String script) async {
     try {
       await Process.run(
         'powershell',
@@ -53,6 +68,27 @@ class AlarmScheduler {
       // Swallowed — nothing meaningful to do if PowerShell is unavailable.
     }
   }
+
+  /// The PowerShell that replaces the timer's task.
+  @visibleForTesting
+  static String timerCommand(DateTime? endAt, String exe, String workDir) {
+    final remove = "Unregister-ScheduledTask -TaskName '$timerTaskName' "
+        "-Confirm:\$false -ErrorAction SilentlyContinue";
+    if (endAt == null) return remove;
+    String two(int n) => n.toString().padLeft(2, '0');
+    final at = '${endAt.year}-${two(endAt.month)}-${two(endAt.day)}'
+        'T${two(endAt.hour)}:${two(endAt.minute)}:${two(endAt.second)}';
+    return "$remove\n"
+        "Register-ScheduledTask -TaskName '$timerTaskName' "
+        "-Action (New-ScheduledTaskAction -Execute '${_quote(exe)}' "
+        "-Argument '--timer-done' -WorkingDirectory '${_quote(workDir)}') "
+        "-Trigger (New-ScheduledTaskTrigger -Once -At '$at') "
+        "-Settings ($_settings) -Force | Out-Null";
+  }
+
+  // Single-quoted strings in PowerShell are literal — safe for backslashes
+  // in paths. Escape any embedded single quote by doubling it.
+  static String _quote(String s) => s.replaceAll("'", "''");
 
   static String _buildScript(
     List<AlarmModel> enabled,
@@ -103,14 +139,9 @@ class AlarmScheduler {
       trigger = "New-ScheduledTaskTrigger -Once -At '$iso'";
     }
 
-    // Single-quoted strings in PowerShell are literal — safe for backslashes
-    // in paths. Escape any embedded single quote by doubling it.
-    final exeQ = exe.replaceAll("'", "''");
-    final workQ = workDir.replaceAll("'", "''");
-
     return "Register-ScheduledTask -TaskName '$name' "
-        "-Action (New-ScheduledTaskAction -Execute '$exeQ' "
-        "-Argument '--fire ${alarm.id}' -WorkingDirectory '$workQ') "
+        "-Action (New-ScheduledTaskAction -Execute '${_quote(exe)}' "
+        "-Argument '--fire ${alarm.id}' -WorkingDirectory '${_quote(workDir)}') "
         "-Trigger ($trigger) -Settings ($_settings) -Force | Out-Null";
   }
 }

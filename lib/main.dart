@@ -9,9 +9,11 @@ import 'l10n/app_localizations.dart';
 import 'l10n/plinth_strings_delegate.dart';
 import 'providers/app_provider.dart';
 import 'services/alarm_service.dart';
+import 'services/timer_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/clock_screen.dart';
 import 'screens/stopwatch_screen.dart';
+import 'screens/timer_screen.dart';
 import 'screens/world_clock_screen.dart';
 import 'screens/alarm_screen.dart';
 
@@ -38,13 +40,17 @@ void main(List<String> args) async {
 
   AlarmService.instance.navigatorKey = _navigatorKey;
   await AlarmService.instance.load();
+  TimerService.instance.navigatorKey = _navigatorKey;
+  await TimerService.instance.load();
 
   // `--fire <alarmId>` is passed by the Windows Task Scheduler entry when
   // an alarm fires while the app is closed. Start firing after the first
-  // frame so the popup has a Navigator.
+  // frame so the popup has a Navigator. (`--timer-done` needs nothing
+  // here: TimerService.start rings a timer that ended moments ago.)
   final fireId = _parseFireArg(args);
   WidgetsBinding.instance.addPostFrameCallback((_) {
     AlarmService.instance.start();
+    TimerService.instance.start();
     if (fireId != null) AlarmService.instance.fireById(fireId);
   });
   // Only one bClock runs per exe: the Windows runner folds a later launch
@@ -52,7 +58,11 @@ void main(List<String> args) async {
   // args here.
   const MethodChannel('bclock/window').setMethodCallHandler((call) async {
     if (call.method != 'secondLaunch') return;
-    final id = _parseFireArg((call.arguments as List).cast<String>());
+    final launchArgs = (call.arguments as List).cast<String>();
+    if (launchArgs.contains('--timer-done')) {
+      TimerService.instance.fireIfDue();
+    }
+    final id = _parseFireArg(launchArgs);
     if (id != null) await AlarmService.instance.fireById(id);
   });
 
@@ -126,6 +136,7 @@ class _MainScreenState extends State<MainScreen> {
     final screens = [
       ClockScreen(active: _currentIndex == 0),
       const StopwatchScreen(),
+      const TimerScreen(),
       const WorldClockScreen(),
       const AlarmScreen(),
     ];
@@ -182,6 +193,11 @@ class _MainScreenState extends State<MainScreen> {
                         icon: const Icon(Icons.timer_outlined),
                         selectedIcon: const Icon(Icons.timer),
                         label: l.navStopwatch,
+                      ),
+                      NavigationDestination(
+                        icon: const Icon(Icons.hourglass_empty),
+                        selectedIcon: const Icon(Icons.hourglass_full),
+                        label: l.navTimer,
                       ),
                       NavigationDestination(
                         icon: const Icon(Icons.language_outlined),

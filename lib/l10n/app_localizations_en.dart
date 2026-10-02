@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navStopwatch => 'Stopwatch';
 
   @override
+  String get navTimer => 'Timer';
+
+  @override
   String get navWorld => 'World';
 
   @override
@@ -52,6 +55,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get start => 'Start';
+
+  @override
+  String get timerTitle => 'Timer';
+
+  @override
+  String get resume => 'Resume';
+
+  @override
+  String get timesUp => 'Time\'s up';
+
+  @override
+  String get plusOneMinute => '+1 min';
+
+  @override
+  String get addMinute => 'Add 1 minute';
+
+  @override
+  String get removeMinute => 'Remove 1 minute';
+
+  @override
+  String presetMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get timeLeft => 'Time left';
 
   @override
   String get lapTime => 'Time';

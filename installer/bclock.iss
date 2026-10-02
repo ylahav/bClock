@@ -65,6 +65,7 @@ Name: "{autodesktop}\bClock"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,bClock}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-; The alarm tasks (AlarmScheduler.taskPrefix) launch {app}\bclock.exe;
-; remove them with the app so they don't fire into a missing exe.
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""Get-ScheduledTask -TaskName 'bClock_alarm_*' -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false"""; Flags: runhidden; RunOnceId: "RemoveAlarmTasks"
+; The alarm tasks (AlarmScheduler.taskPrefix) and the countdown timer's task
+; (AlarmScheduler.timerTaskName) launch {app}\bclock.exe; remove them with
+; the app so they don't fire into a missing exe.
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""Get-ScheduledTask -TaskName 'bClock_alarm_*','bClock_timer' -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false"""; Flags: runhidden; RunOnceId: "RemoveAlarmTasks"

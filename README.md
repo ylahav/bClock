@@ -1,8 +1,8 @@
 # bClock
 
 A minimalist desktop clock for Windows: an analog or digital clock that sizes its
-window to fit, a stopwatch, world clocks, and alarms that ring even when the app
-is closed.
+window to fit, a stopwatch, a countdown timer, world clocks, and alarms that
+ring even when the app is closed.
 
 Built with Flutter and the [Plinth](https://pub.dev/packages/plinth_components)
 UI kit.
@@ -18,6 +18,9 @@ UI kit.
   collapsed for a bare clock face. Optional *always on top*.
 - **Stopwatch** — with laps (fastest and slowest highlighted). A running
   stopwatch keeps counting while the app is closed.
+- **Timer** — a countdown with presets (1 to 45 minutes) and ±1 minute. Like
+  the stopwatch it survives the app closing, and it rings even when bClock
+  isn't running, the same way alarms do.
 - **World clocks** — pick cities from a list of 39; times are DST-aware and show
   the local zone abbreviation (EST/EDT, CET/CEST…). Shown as analog, digital, or
   both.
@@ -101,8 +104,9 @@ Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm
 lib/
   main.dart               App entry, --fire handling, tab shell
   providers/              AppProvider: all settings, persisted
-  screens/                Clock, Stopwatch, World, Alarms, Settings
-  services/               AlarmService (firing, snooze) and AlarmScheduler
+  screens/                Clock, Stopwatch, Timer, World, Alarms, Settings
+  services/               AlarmService (firing, snooze), TimerService and
+                          AlarmScheduler (Windows tasks for both)
                           (Windows scheduled tasks)
   models/                 AlarmModel, WorldCity
   widgets/                AnalogClock, DigitalClock

@@ -2,6 +2,7 @@
   "@@locale": "en",
   "navClock": "Clock",
   "navStopwatch": "Stopwatch",
+  "navTimer": "Timer",
   "navWorld": "World",
   "navAlarm": "Alarm",
   "viewDigital": "Digital",
@@ -15,6 +16,21 @@
   "reset": "Reset",
   "pause": "Pause",
   "start": "Start",
+  "timerTitle": "Timer",
+  "resume": "Resume",
+  "timesUp": "Time's up",
+  "plusOneMinute": "+1 min",
+  "addMinute": "Add 1 minute",
+  "removeMinute": "Remove 1 minute",
+  "presetMinutes": "{minutes} min",
+  "@presetMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeLeft": "Time left",
   "lapTime": "Time",
   "lapNumber": "Lap {n}",
   "@lapNumber": {

@@ -5,8 +5,6 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Next
 
-- ⭐ **Countdown timer tab.** Reuse the stopwatch's restart-proof design: save
-  the end time, not ticks. Presets (5 / 10 / 25 min) make Pomodoro free.
 - ⭐ **Windows notifications** for alarms and timers, so they're seen when
   bClock is behind other windows. Snooze from the notification.
 - ⭐ **Meeting planner** in World clocks: a time slider that shows every city
@@ -41,6 +39,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Countdown timer tab: presets, ±1 min, survives restarts, rings with bClock
+  closed via a scheduled task.
 - Alarm tasks wake the PC, run on battery, and aren't stopped on unplug or
   after 72 hours; tasks re-sync on launch.
 - `installer/build.ps1`: one command for `setup.exe`; CI uses it (#4).

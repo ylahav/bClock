@@ -36,7 +36,8 @@ void main() {
     ..syncScheduler = (alarms) async {
       schedulerSyncs.add([for (final a in alarms) a.id]);
     }
-    ..playSound = () async {};
+    ..playSound = () async {}
+    ..silenceSound = () async {};
   setUp(() {
     windowCalls.clear();
     schedulerSyncs.clear();

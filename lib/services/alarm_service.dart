@@ -37,9 +37,12 @@ class AlarmService extends ChangeNotifier {
   @visibleForTesting
   Future<void> Function(List<AlarmModel>) syncScheduler = AlarmScheduler.sync;
 
-  /// Starts the looping alarm sound; replaced in tests (no audio plugin).
+  /// Start and stop the looping ring; replaced in tests (no audio plugin).
+  /// Callers use [startSound] / [stopSound].
   @visibleForTesting
   late Future<void> Function() playSound = _playSound;
+  @visibleForTesting
+  late Future<void> Function() silenceSound = () => _player.stop();
 
   /// Navigator key injected from main.dart for showing dialogs.
   GlobalKey<NavigatorState>? navigatorKey;
@@ -163,20 +166,23 @@ class AlarmService extends ChangeNotifier {
   }
 
   Future<void> _fire(AlarmModel alarm) async {
-    await playSound();
+    await startSound();
 
     final ctx = navigatorKey?.currentContext;
     if (ctx != null && ctx.mounted) {
       await _showAlarmPopup(
         ctx,
         alarm: alarm,
-        onDismiss: _stopSound,
+        onDismiss: stopSound,
         onSnooze: () => snooze(alarm),
       );
     }
   }
 
-  Future<void> _stopSound() => _player.stop();
+  /// Start / stop the looping ring. One player, shared with the countdown
+  /// timer, so its sound and an alarm's never play over each other.
+  Future<void> startSound() => playSound();
+  Future<void> stopSound() => silenceSound();
 
   /// Fires the alarm with [id], unless it already fired this minute.
   /// Intended for the `--fire` launch path (Windows Task Scheduler → fresh
@@ -196,7 +202,7 @@ class AlarmService extends ChangeNotifier {
   /// Stop the current sound and re-fire the alarm after [snoozeDuration].
   /// Any pending snooze for the same alarm is cancelled first.
   Future<void> snooze(AlarmModel alarm) async {
-    await _stopSound();
+    await stopSound();
     _snoozeTimers[alarm.id]?.cancel();
     _snoozeTimers[alarm.id] = Timer(snoozeDuration, () {
       _snoozeTimers.remove(alarm.id);
