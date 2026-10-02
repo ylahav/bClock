@@ -282,28 +282,35 @@ class _ClockScreenState extends State<ClockScreen> with WindowListener {
                               _fitWindowHeight(page.maxWidth);
                             }),
                     behavior: HitTestBehavior.opaque,
+                    // The sizing math aims for a clock that fits, but the
+                    // window can be shorter than planned (the user dragged
+                    // its edge, or the controls are mid-animation): shrink
+                    // the clock then rather than overflow. No-op when it fits.
                     child: Center(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        layoutBuilder: (current, previous) => Stack(
-                          alignment: Alignment.center,
-                          clipBehavior: Clip.hardEdge,
-                          children: [
-                            ...previous,
-                            if (current != null) current,
-                          ],
-                        ),
-                        transitionBuilder: (child, anim) => FadeTransition(
-                          opacity: anim,
-                          child: ScaleTransition(
-                            scale: Tween(begin: 0.94, end: 1.0).animate(
-                              CurvedAnimation(
-                                  parent: anim, curve: Curves.easeOut),
-                            ),
-                            child: child,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          layoutBuilder: (current, previous) => Stack(
+                            alignment: Alignment.center,
+                            clipBehavior: Clip.hardEdge,
+                            children: [
+                              ...previous,
+                              if (current != null) current,
+                            ],
                           ),
+                          transitionBuilder: (child, anim) => FadeTransition(
+                            opacity: anim,
+                            child: ScaleTransition(
+                              scale: Tween(begin: 0.94, end: 1.0).animate(
+                                CurvedAnimation(
+                                    parent: anim, curve: Curves.easeOut),
+                              ),
+                              child: child,
+                            ),
+                          ),
+                          child: _buildClock(p, clockConstraints),
                         ),
-                        child: _buildClock(p, clockConstraints),
                       ),
                     ),
                   ),

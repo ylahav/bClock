@@ -9,6 +9,7 @@ import 'package:bclock/l10n/app_localizations.dart';
 import 'package:bclock/models/alarm_model.dart';
 import 'package:bclock/providers/app_provider.dart';
 import 'package:bclock/screens/alarm_screen.dart';
+import 'package:bclock/screens/clock_screen.dart';
 import 'package:bclock/services/alarm_service.dart';
 import 'package:bclock/screens/settings_screen.dart';
 import 'package:bclock/screens/stopwatch_screen.dart';
@@ -274,5 +275,33 @@ void main() {
     expect(find.byType(TextField), findsNothing); // dialog closed
     expect(find.text('Gym'), findsOneWidget);
     expect(AlarmService.instance.alarms.single.label, 'Gym');
+  });
+
+  testWidgets('Clock tab never overflows a short window', (tester) async {
+    // Shorter than the clock wants: the user dragged the window edge, or
+    // the controls row is mid-animation. The clock must scale, not
+    // overflow.
+    for (final view in ClockView.values) {
+      for (final size in ClockSizeOption.values) {
+        for (final height in [240.0, 200.0, 160.0, 120.0]) {
+          SharedPreferences.setMockInitialValues({
+            'flutter.clockView': view.index,
+            'flutter.clockSize': size.index,
+          });
+          final provider = AppProvider();
+          await provider.load();
+          tester.view.physicalSize = Size(308, height);
+          tester.view.devicePixelRatio = 1;
+          await tester.pumpWidget(ChangeNotifierProvider.value(
+            value: provider,
+            child: _app(const ClockScreen(active: false)),
+          ));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull,
+              reason: '$view, $size, height $height');
+        }
+      }
+    }
+    tester.view.reset();
   });
 }
