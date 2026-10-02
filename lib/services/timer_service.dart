@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:plinth_components/plinth_components.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../l10n/app_localizations.dart';
 import 'alarm_scheduler.dart';
 import 'alarm_service.dart';
 
@@ -230,86 +229,27 @@ class TimerService extends ChangeNotifier {
 
   // ── Ring ──────────────────────────────────────────────────
 
-  Future<void> _ring() async {
-    final sound = AlarmService.instance;
-    await sound.startSound();
-    final ctx = navigatorKey?.currentContext;
-    if (ctx == null || !ctx.mounted) return;
-    final controller = PlinthDisclosureController(initiallyOpen: true);
-    await PlinthModal(
-      controller: controller,
-      closeOnBackdropTap: false,
-      size: PlinthSize.xs,
-      child: _TimesUpPopup(
-        onDismiss: sound.stopSound,
-        onAddMinute: () {
-          sound.stopSound();
+  /// The timer's toast id, above every alarm's (see AlarmService).
+  static const int _toastId = 0x40000000;
+
+  Future<void> _ring() {
+    final ringer = AlarmService.instance;
+    final l = ringer.strings();
+    return ringer.ring(
+      id: _toastId,
+      icon: Icons.hourglass_bottom,
+      toastTitle: l.timesUp,
+      toastBody: l.timerTitle,
+      headline: PlinthText(l.timesUp,
+          size: PlinthSize.xl, textAlign: TextAlign.center),
+      actions: [
+        RingAction('plus1', l.plusOneMinute, Icons.add, () {
           _total = const Duration(minutes: 1);
           _runFor(const Duration(minutes: 1));
-        },
-      ),
-    ).show(ctx);
-    controller.dispose();
-  }
-}
-
-// ── Popup ───────────────────────────────────────────────────────
-
-/// No title (so no close button) and no backdrop dismissal, like the alarm
-/// popup: the user must pick +1 min or Dismiss.
-class _TimesUpPopup extends StatelessWidget {
-  final VoidCallback onDismiss;
-  final VoidCallback onAddMinute;
-
-  const _TimesUpPopup({required this.onDismiss, required this.onAddMinute});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const PlinthThemeIcon(
-            icon: Icon(Icons.hourglass_bottom),
-            variant: PlinthVariant.light,
-            size: PlinthSize.xl,
-            circle: true,
-          ),
-          const SizedBox(height: 16),
-          PlinthText(
-            l.timesUp,
-            size: PlinthSize.xl,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          PlinthGroup(
-            mainAxisAlignment: MainAxisAlignment.center,
-            gap: PlinthSize.sm,
-            children: [
-              PlinthButton(
-                variant: PlinthVariant.light,
-                leadingIcon: const Icon(Icons.add),
-                onPressed: () {
-                  onAddMinute();
-                  Navigator.of(context).pop();
-                },
-                child: Text(l.plusOneMinute),
-              ),
-              PlinthButton(
-                leadingIcon: const Icon(Icons.alarm_off),
-                onPressed: () {
-                  onDismiss();
-                  Navigator.of(context).pop();
-                },
-                child: Text(l.dismiss),
-              ),
-            ],
-          ),
-        ],
-      ),
+        }),
+        RingAction('dismiss', l.dismiss, Icons.alarm_off, () {},
+            primary: true),
+      ],
     );
   }
 }

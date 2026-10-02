@@ -9,6 +9,7 @@ import 'l10n/app_localizations.dart';
 import 'l10n/plinth_strings_delegate.dart';
 import 'providers/app_provider.dart';
 import 'services/alarm_service.dart';
+import 'services/notification_service.dart';
 import 'services/timer_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/clock_screen.dart';
@@ -42,6 +43,8 @@ void main(List<String> args) async {
   await AlarmService.instance.load();
   TimerService.instance.navigatorKey = _navigatorKey;
   await TimerService.instance.load();
+  // Toasts for a ringing alarm or timer; without them the popup still rings.
+  await NotificationService.instance.init();
 
   // `--fire <alarmId>` is passed by the Windows Task Scheduler entry when
   // an alarm fires while the app is closed. Start firing after the first

@@ -5,8 +5,6 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Next
 
-- ⭐ **Windows notifications** for alarms and timers, so they're seen when
-  bClock is behind other windows. Snooze from the notification.
 - ⭐ **Meeting planner** in World clocks: a time slider that shows every city
   at that moment, with working hours highlighted.
 - **Keep running in the tray.** Closing the window currently quits the app, so
@@ -39,6 +37,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Windows notifications for a ringing alarm or timer, with Snooze / +1 min /
+  Dismiss on the toast; answering either the toast or the popup ends both.
 - Countdown timer tab: presets, ±1 min, survives restarts, rings with bClock
   closed via a scheduled task.
 - Alarm tasks wake the PC, run on battery, and aren't stopped on unplug or

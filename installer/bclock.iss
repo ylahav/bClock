@@ -64,6 +64,12 @@ Name: "{autodesktop}\bClock"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,bClock}"; Flags: nowait postinstall skipifsilent
 
+[Registry]
+; bClock's toast registration, which the notification plugin writes on first
+; run (NotificationService.appUserModelId). Not created here, only removed.
+Root: HKCU; Subkey: "Software\Classes\AppUserModelId\bClock.bClock"; Flags: uninsdeletekey dontcreatekey
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\PushNotifications\Backup\bClock.bClock"; Flags: uninsdeletekey dontcreatekey
+
 [UninstallRun]
 ; The alarm tasks (AlarmScheduler.taskPrefix) and the countdown timer's task
 ; (AlarmScheduler.timerTaskName) launch {app}\bclock.exe; remove them with

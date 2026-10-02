@@ -6,6 +6,7 @@ import 'package:plinth_components/plinth_components.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm_model.dart';
+import 'notification_service.dart';
 import 'alarm_scheduler.dart';
 
 /// Singleton that owns the alarm list: loads and saves it, checks it every
@@ -165,18 +166,94 @@ class AlarmService extends ChangeNotifier {
     await _player.play(AssetSource('sounds/alarm.wav'));
   }
 
-  Future<void> _fire(AlarmModel alarm) async {
+  /// Toast ids: alarms below [_timerToastId], the timer at it.
+  static int _alarmToastId(String id) => id.hashCode & 0x3fffffff;
+
+  Future<void> _fire(AlarmModel alarm) {
+    final l = strings();
+    return ring(
+      id: _alarmToastId(alarm.id),
+      icon: Icons.alarm,
+      toastTitle: alarm.label.isEmpty ? l.navAlarm : alarm.label,
+      toastBody: alarm.timeString,
+      headline: _BigTime(alarm.timeString),
+      detail: alarm.label,
+      actions: [
+        RingAction('snooze', l.snooze(snoozeDuration.inMinutes), Icons.snooze,
+            () => snooze(alarm)),
+        RingAction('dismiss', l.dismiss, Icons.alarm_off, () {},
+            primary: true),
+      ],
+    );
+  }
+
+  /// The UI language's strings, for text shown outside a widget (toasts).
+  AppLocalizations strings() {
+    final ctx = navigatorKey?.currentContext;
+    return ctx != null && ctx.mounted
+        ? AppLocalizations.of(ctx)
+        : lookupAppLocalizations(const Locale('en'));
+  }
+
+  /// Rings: plays the looping sound, and offers [actions] both as an
+  /// in-app popup and as a Windows toast (which shows even when bClock is
+  /// behind other windows). Whichever the user answers first ends the
+  /// ring: the sound stops, the toast is withdrawn, the popup closes, and
+  /// then that action runs. Shared by alarms and the countdown timer.
+  Future<void> ring({
+    required int id,
+    required IconData icon,
+    required String toastTitle,
+    required String toastBody,
+    required Widget headline,
+    String detail = '',
+    required List<RingAction> actions,
+  }) async {
+    final notifications = NotificationService.instance;
+    final close = ValueNotifier(false);
+    var answered = false;
+    void answer(RingAction action) {
+      if (answered) return;
+      answered = true;
+      unawaited(stopSound());
+      unawaited(notifications.cancel(id));
+      close.value = true;
+      action.onSelected();
+    }
+
     await startSound();
+    final byKey = {for (final a in actions) a.key: a};
+    unawaited(notifications.show(
+      id,
+      title: toastTitle,
+      body: toastBody,
+      actions: {for (final a in actions) a.key: a.label},
+      onAction: (key) {
+        final action = byKey[key];
+        if (action != null) answer(action);
+      },
+    ));
 
     final ctx = navigatorKey?.currentContext;
-    if (ctx != null && ctx.mounted) {
-      await _showAlarmPopup(
-        ctx,
-        alarm: alarm,
-        onDismiss: stopSound,
-        onSnooze: () => snooze(alarm),
-      );
-    }
+    if (ctx == null || !ctx.mounted) return;
+    final controller = PlinthDisclosureController(initiallyOpen: true);
+    // No title (so no close button) and no backdrop dismissal: the user
+    // must pick one of the actions, here or on the toast.
+    await PlinthModal(
+      controller: controller,
+      closeOnBackdropTap: false,
+      size: PlinthSize.xs,
+      child: _RingPopup(
+        icon: icon,
+        headline: headline,
+        detail: detail,
+        actions: actions,
+        onAnswer: answer,
+        close: close,
+      ),
+    ).show(ctx);
+    controller.dispose();
+    close.dispose();
   }
 
   /// Start / stop the looping ring. One player, shared with the countdown
@@ -213,101 +290,122 @@ class AlarmService extends ChangeNotifier {
 
 // ── Popup dialog ────────────────────────────────────────────────
 
-/// Shows the alarm popup as a [PlinthModal]. No title (so no close
-/// button) and no backdrop dismissal: the user must pick Snooze or Dismiss.
-Future<void> _showAlarmPopup(
-  BuildContext context, {
-  required AlarmModel alarm,
-  required VoidCallback onDismiss,
-  required VoidCallback onSnooze,
-}) async {
-  final controller = PlinthDisclosureController(initiallyOpen: true);
-  await PlinthModal(
-    controller: controller,
-    closeOnBackdropTap: false,
-    size: PlinthSize.xs,
-    child: _AlarmPopup(alarm: alarm, onDismiss: onDismiss, onSnooze: onSnooze),
-  ).show(context);
-  controller.dispose();
+/// A button of a ring, shown in the popup and on the toast.
+class RingAction {
+  /// [key] identifies the button on the toast; [primary] draws it filled.
+  const RingAction(this.key, this.label, this.icon, this.onSelected,
+      {this.primary = false});
+
+  final String key;
+  final String label;
+  final IconData icon;
+  final VoidCallback onSelected;
+  final bool primary;
 }
 
-class _AlarmPopup extends StatelessWidget {
-  final AlarmModel alarm;
-  final VoidCallback onDismiss;
-  final VoidCallback onSnooze;
+/// The alarm's time, large.
+class _BigTime extends StatelessWidget {
+  final String time;
+  const _BigTime(this.time);
 
-  const _AlarmPopup({
-    required this.alarm,
-    required this.onDismiss,
-    required this.onSnooze,
+  @override
+  Widget build(BuildContext context) => Text(
+        time,
+        style: TextStyle(
+          fontSize: 48,
+          fontWeight: FontWeight.w200,
+          color: context.plinth.text,
+          fontFeatures: const [FontFeature.tabularFigures()],
+          height: 1,
+        ),
+      );
+}
+
+class _RingPopup extends StatefulWidget {
+  final IconData icon;
+  final Widget headline;
+  final String detail;
+  final List<RingAction> actions;
+  final ValueChanged<RingAction> onAnswer;
+
+  /// Set when the ring was answered, here or on the toast.
+  final ValueNotifier<bool> close;
+
+  const _RingPopup({
+    required this.icon,
+    required this.headline,
+    required this.detail,
+    required this.actions,
+    required this.onAnswer,
+    required this.close,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final theme = context.plinth;
-    final l = AppLocalizations.of(context);
+  State<_RingPopup> createState() => _RingPopupState();
+}
 
+class _RingPopupState extends State<_RingPopup> {
+  @override
+  void initState() {
+    super.initState();
+    widget.close.addListener(_onClose);
+  }
+
+  @override
+  void dispose() {
+    widget.close.removeListener(_onClose);
+    super.dispose();
+  }
+
+  /// Closes this popup's own route, even if another sits above it.
+  void _onClose() {
+    if (!widget.close.value || !mounted) return;
+    final route = ModalRoute.of(context);
+    if (route == null || !route.isActive) return;
+    if (route.isCurrent) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).removeRoute(route);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Bell icon
-          const PlinthThemeIcon(
-            icon: Icon(Icons.alarm),
+          PlinthThemeIcon(
+            icon: Icon(widget.icon),
             variant: PlinthVariant.light,
             size: PlinthSize.xl,
             circle: true,
           ),
-
           const SizedBox(height: 16),
-
-          // Time
-          Text(
-            alarm.timeString,
-            style: TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.w200,
-              color: theme.text,
-              fontFeatures: const [FontFeature.tabularFigures()],
-              height: 1,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Label (if set)
-          if (alarm.label.isNotEmpty)
+          widget.headline,
+          if (widget.detail.isNotEmpty) ...[
+            const SizedBox(height: 8),
             PlinthText(
-              alarm.label,
+              widget.detail,
               size: PlinthSize.lg,
               color: 'gray',
               textAlign: TextAlign.center,
             ),
-
+          ],
           const SizedBox(height: 24),
-
           PlinthGroup(
             mainAxisAlignment: MainAxisAlignment.center,
             gap: PlinthSize.sm,
             children: [
-              PlinthButton(
-                variant: PlinthVariant.light,
-                leadingIcon: const Icon(Icons.snooze),
-                onPressed: () {
-                  onSnooze();
-                  Navigator.of(context).pop();
-                },
-                child: Text(l.snooze(AlarmService.snoozeDuration.inMinutes)),
-              ),
-              PlinthButton(
-                leadingIcon: const Icon(Icons.alarm_off),
-                onPressed: () {
-                  onDismiss();
-                  Navigator.of(context).pop();
-                },
-                child: Text(l.dismiss),
-              ),
+              for (final a in widget.actions)
+                PlinthButton(
+                  variant:
+                      a.primary ? PlinthVariant.filled : PlinthVariant.light,
+                  leadingIcon: Icon(a.icon),
+                  onPressed: () => widget.onAnswer(a),
+                  child: Text(a.label),
+                ),
             ],
           ),
         ],
