@@ -37,6 +37,8 @@
       }
     }
   },
+  "moveCityEarlier": "Move earlier",
+  "moveCityLater": "Move later",
   "searchCities": "Search cities…",
   "alarmsTitle": "Alarms",
   "addAlarm": "Add alarm",

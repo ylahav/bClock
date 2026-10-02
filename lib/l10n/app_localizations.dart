@@ -240,6 +240,18 @@ abstract class AppLocalizations {
   /// **'Remove {city}'**
   String removeCity(String city);
 
+  /// No description provided for @moveCityEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Move earlier'**
+  String get moveCityEarlier;
+
+  /// No description provided for @moveCityLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Move later'**
+  String get moveCityLater;
+
   /// No description provided for @searchCities.
   ///
   /// In en, this message translates to:

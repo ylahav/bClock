@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plinth_blocks/plinth_blocks.dart';
@@ -303,5 +304,68 @@ void main() {
       }
     }
     tester.view.reset();
+  });
+
+  Future<void> pumpWorld(WidgetTester tester, List<String> zones) async {
+    tzdata.initializeTimeZones();
+    SharedPreferences.setMockInitialValues({'flutter.world.cities': zones});
+    final provider = AppProvider();
+    await provider.load();
+    tester.view.physicalSize = const Size(700, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(ChangeNotifierProvider.value(
+      value: provider,
+      child: _app(const WorldClockScreen()),
+    ));
+    await tester.pumpAndSettle();
+  }
+
+  Future<List<String>?> savedZones() async =>
+      (await SharedPreferences.getInstance()).getStringList('world.cities');
+
+  testWidgets('World clocks reorder by dragging a card onto another',
+      (tester) async {
+    await pumpWorld(tester, ['Europe/London', 'Asia/Tokyo', 'Europe/Paris']);
+
+    final drag =
+        await tester.startGesture(tester.getCenter(find.text('Paris')));
+    await drag.moveBy(const Offset(-20, 0)); // past the drag slop
+    await tester.pump();
+    await drag.moveTo(tester.getCenter(find.text('London').first));
+    await tester.pump();
+    await drag.up();
+    await tester.pumpAndSettle();
+
+    expect(await savedZones(), ['Europe/Paris', 'Europe/London', 'Asia/Tokyo']);
+    // Drawn in the new order too: Paris is now left of London.
+    expect(tester.getCenter(find.text('Paris')).dx,
+        lessThan(tester.getCenter(find.text('London')).dx));
+  });
+
+  testWidgets('World clocks reorder from a screen reader', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await pumpWorld(tester, ['Europe/London', 'Asia/Tokyo']);
+
+    final node = tester.getSemantics(find.text('Tokyo'));
+    final ids = node.getSemanticsData().customSemanticsActionIds!;
+    final later = CustomSemanticsAction.getIdentifier(
+        const CustomSemanticsAction(label: 'Move later'));
+    final earlier = CustomSemanticsAction.getIdentifier(
+        const CustomSemanticsAction(label: 'Move earlier'));
+    // Last card: it can only move earlier.
+    expect(ids, contains(earlier));
+    expect(ids, isNot(contains(later)));
+
+    tester.binding.performSemanticsAction(SemanticsActionEvent(
+      type: SemanticsAction.customAction,
+      viewId: tester.view.viewId,
+      nodeId: node.id,
+      arguments: earlier,
+    ));
+    await tester.pumpAndSettle();
+
+    expect(await savedZones(), ['Asia/Tokyo', 'Europe/London']);
+    semantics.dispose();
   });
 }

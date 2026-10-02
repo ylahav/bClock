@@ -23,6 +23,8 @@
   "noCities": "לא נוספו ערים",
   "addACity": "הוספת עיר",
   "removeCity": "הסרת {city}",
+  "moveCityEarlier": "הזזה למקום הקודם",
+  "moveCityLater": "הזזה למקום הבא",
   "searchCities": "חיפוש ערים…",
   "alarmsTitle": "שעון מעורר",
   "addAlarm": "הוספת התראה",

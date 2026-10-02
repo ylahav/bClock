@@ -23,6 +23,8 @@
   "noCities": "Aucune ville ajoutée",
   "addACity": "Ajouter une ville",
   "removeCity": "Retirer {city}",
+  "moveCityEarlier": "Déplacer avant",
+  "moveCityLater": "Déplacer après",
   "searchCities": "Rechercher des villes…",
   "alarmsTitle": "Alarmes",
   "addAlarm": "Ajouter une alarme",

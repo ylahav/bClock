@@ -82,6 +82,12 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get moveCityEarlier => 'Mover antes';
+
+  @override
+  String get moveCityLater => 'Mover después';
+
+  @override
   String get searchCities => 'Buscar ciudades…';
 
   @override

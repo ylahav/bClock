@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:intl/intl.dart';
 import 'package:plinth_blocks/plinth_blocks.dart';
 import 'package:provider/provider.dart';
@@ -79,6 +80,18 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
 
   tz.TZDateTime _cityTime(WorldCity city) =>
       tz.TZDateTime.from(_utcNow, tz.getLocation(city.tz));
+
+  /// Puts [city] at [to], where the card it was dropped on (or the
+  /// neighbour it was moved past) was.
+  void _moveCity(WorldCity city, int to) {
+    final from = _active.indexOf(city);
+    if (from == -1 || from == to) return;
+    setState(() {
+      _active.removeAt(from);
+      _active.insert(to.clamp(0, _active.length), city);
+    });
+    _save();
+  }
 
   void _removeCity(WorldCity city) {
     setState(() => _active.remove(city));
@@ -181,12 +194,30 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
                         itemCount: _active.length,
                         itemBuilder: (context, i) {
                           final city = _active[i];
-                          return _WorldCard(
-                            city: city,
-                            cityTime: _cityTime(city),
-                            view: p.clockView,
-                            cellWidth: cellW,
-                            onDelete: () => _removeCity(city),
+                          // Dragging is the mouse path; these actions are
+                          // the same move for screen readers.
+                          return Semantics(
+                            customSemanticsActions: {
+                              if (i > 0)
+                                CustomSemanticsAction(label: l.moveCityEarlier):
+                                    () => _moveCity(city, i - 1),
+                              if (i < _active.length - 1)
+                                CustomSemanticsAction(label: l.moveCityLater):
+                                    () => _moveCity(city, i + 1),
+                            },
+                            child: _DraggableCityCell(
+                              key: ValueKey(city),
+                              city: city,
+                              size: Size(cellW, cellH),
+                              onDropped: (dragged) => _moveCity(dragged, i),
+                              child: _WorldCard(
+                                city: city,
+                                cityTime: _cityTime(city),
+                                view: p.clockView,
+                                cellWidth: cellW,
+                                onDelete: () => _removeCity(city),
+                              ),
+                            ),
                           );
                         },
                       );
@@ -337,6 +368,66 @@ class _WorldCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Drag to reorder ────────────────────────────────────────────
+
+/// A grid cell that can be dragged onto another, and accepts a drop.
+/// The move happens on drop, not while hovering, so the grid never
+/// reshuffles under the pointer.
+class _DraggableCityCell extends StatelessWidget {
+  final WorldCity city;
+  final Size size;
+  final ValueChanged<WorldCity> onDropped;
+  final Widget child;
+
+  const _DraggableCityCell({
+    super.key,
+    required this.city,
+    required this.size,
+    required this.onDropped,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.plinth;
+    final radius = BorderRadius.circular(theme.radius[PlinthSize.lg]!);
+
+    return DragTarget<WorldCity>(
+      onWillAcceptWithDetails: (details) => details.data != city,
+      onAcceptWithDetails: (details) => onDropped(details.data),
+      builder: (context, candidates, _) => MouseRegion(
+        cursor: SystemMouseCursors.grab,
+        child: Draggable<WorldCity>(
+          data: city,
+          // Drawn in the Overlay, outside the page's Material.
+          feedback: Material(
+            type: MaterialType.transparency,
+            child: Opacity(
+              opacity: 0.85,
+              child: SizedBox.fromSize(size: size, child: child),
+            ),
+          ),
+          childWhenDragging: Opacity(opacity: 0.35, child: child),
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              border: candidates.isEmpty
+                  ? null
+                  : Border.all(
+                      color:
+                          theme.readableOn(theme.primaryColor, theme.surface),
+                      width: 2,
+                    ),
+            ),
+            child: child,
+          ),
+        ),
       ),
     );
   }
