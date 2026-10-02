@@ -9,8 +9,8 @@ import '../models/alarm_model.dart';
 ///  - MSIX-packaged builds run in an app container; `Register-ScheduledTask`
 ///    may be denied. Failure is silent (fire-and-forget by the caller).
 ///  - Tasks fire only when the user is logged in (default trigger settings).
-///  - When a task fires and bClock is already running, a second instance
-///    launches — we don't currently gate this with a single-instance mutex.
+///  - When a task fires and bClock is already running, the Windows runner
+///    forwards `--fire <id>` to the running instance (see single_instance.h).
 class AlarmScheduler {
   static const String taskPrefix = 'bClock_alarm_';
 

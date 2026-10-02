@@ -31,6 +31,8 @@ class FlutterWindow : public Win32Window {
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
 
   // "bclock/window": app-level window chrome calls (title bar theme).
+  // Also delivers "secondLaunch" (args of a later launch, see
+  // SingleInstance) to Dart.
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       window_channel_;
 };

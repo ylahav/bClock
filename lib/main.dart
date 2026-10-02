@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:plinth_components/plinth_components.dart';
 import 'package:provider/provider.dart';
@@ -47,6 +48,14 @@ void main(List<String> args) async {
       AlarmService.instance.fireById(fireId);
     });
   }
+  // Only one bClock runs per exe: the Windows runner folds a later launch
+  // (e.g. a task firing while we're open) into this one and forwards its
+  // args here.
+  const MethodChannel('bclock/window').setMethodCallHandler((call) async {
+    if (call.method != 'secondLaunch') return;
+    final id = _parseFireArg((call.arguments as List).cast<String>());
+    if (id != null) await AlarmService.instance.fireById(id);
+  });
 
   const windowOptions = WindowOptions(
     size: Size(340, 300),

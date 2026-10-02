@@ -65,29 +65,34 @@ class AlarmService {
 
   void _check() {
     final now = DateTime.now();
-    final minute = now.hour * 60 + now.minute;
-
-    // New minute → clear the fired-set so alarms can fire again tomorrow
-    if (minute != _lastMinute) {
-      _firedIds.clear();
-      _lastMinute = minute;
-    }
-
     for (final alarm in List<AlarmModel>.from(alarms)) {
       if (!alarm.isEnabled) continue;
       if (alarm.hour != now.hour) continue;
       if (alarm.minute != now.minute) continue;
-      if (_firedIds.contains(alarm.id)) continue;
       if (alarm.repeat && alarm.days.any((d) => d)) {
         if (!alarm.days[now.weekday - 1]) continue;
       }
+      if (!_markFired(alarm.id)) continue;
 
-      _firedIds.add(alarm.id);
       _fire(alarm);
 
       // One-shot alarm → disable after firing
       if (!alarm.repeat) alarm.isEnabled = false;
     }
+  }
+
+  /// Records that [id] fired this minute. Returns false if it already had —
+  /// the polling loop and a `--fire` launch both fire at the alarm's minute,
+  /// and whichever comes second must not ring again.
+  bool _markFired(String id) {
+    final now = DateTime.now();
+    final minute = now.hour * 60 + now.minute;
+    // New minute → clear the fired-set so alarms can fire again tomorrow
+    if (minute != _lastMinute) {
+      _firedIds.clear();
+      _lastMinute = minute;
+    }
+    return _firedIds.add(id);
   }
 
   // ── Fire ──────────────────────────────────────────────────
@@ -110,11 +115,9 @@ class AlarmService {
 
   Future<void> _stopSound() => _player.stop();
 
-  /// Load the alarm with [id] from prefs and fire it. Intended for the
-  /// `--fire` launch path (Windows Task Scheduler → fresh process).
-  ///
-  /// Also seeds [_lastMinute]/[_firedIds] so the polling loop won't
-  /// double-fire the same alarm this minute.
+  /// Load the alarm with [id] from prefs and fire it, unless it already
+  /// fired this minute. Intended for the `--fire` launch path (Windows Task
+  /// Scheduler → fresh process, or forwarded to the running one).
   ///
   /// TODO: race — AlarmScreen may load its own copy from prefs in parallel.
   /// If AlarmScreen wins, its in-memory list has the one-shot marked
@@ -131,10 +134,7 @@ class AlarmService {
     final index = list.indexWhere((a) => a.id == id);
     if (index == -1) return;
     final alarm = list[index];
-
-    final now = DateTime.now();
-    _lastMinute = now.hour * 60 + now.minute;
-    _firedIds.add(alarm.id);
+    if (!_markFired(alarm.id)) return;
 
     if (!alarm.repeat) {
       alarm.isEnabled = false;

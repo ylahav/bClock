@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "flutter/generated_plugin_registrant.h"
+#include "single_instance.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -65,6 +66,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  SingleInstance::Unmark(GetHandle());
   window_channel_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
@@ -91,6 +93,24 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;
+    case WM_COPYDATA: {
+      const auto* data = reinterpret_cast<const COPYDATASTRUCT*>(lparam);
+      if (data->dwData != SingleInstance::kForwardedArgs) break;
+      // Another launch was folded into this one: come to the front and
+      // let Dart act on its args.
+      ::ShowWindow(hwnd, ::IsIconic(hwnd) ? SW_RESTORE : SW_SHOW);
+      ::SetForegroundWindow(hwnd);
+      if (window_channel_) {
+        flutter::EncodableList args;
+        for (auto& arg : SingleInstance::DecodeArgs(*data)) {
+          args.emplace_back(std::move(arg));
+        }
+        window_channel_->InvokeMethod(
+            "secondLaunch",
+            std::make_unique<flutter::EncodableValue>(std::move(args)));
+      }
+      return TRUE;
+    }
   }
 
   return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
