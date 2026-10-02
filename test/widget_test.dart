@@ -11,6 +11,7 @@ import 'package:bclock/models/alarm_model.dart';
 import 'package:bclock/providers/app_provider.dart';
 import 'package:bclock/screens/alarm_screen.dart';
 import 'package:bclock/screens/clock_screen.dart';
+import 'package:bclock/services/alarm_scheduler.dart';
 import 'package:bclock/services/alarm_service.dart';
 import 'package:bclock/screens/settings_screen.dart';
 import 'package:bclock/screens/stopwatch_screen.dart';
@@ -367,5 +368,20 @@ void main() {
 
     expect(await savedZones(), ['Asia/Tokyo', 'Europe/London']);
     semantics.dispose();
+  });
+
+  test('Alarm tasks wake the PC and run on battery', () {
+    final cmd = AlarmScheduler.registerCommand(
+      AlarmModel(id: 'w', hour: 6, minute: 30, repeat: true),
+      r'C:\Apps\bClock\bclock.exe',
+      r'C:\Apps\bClock',
+    );
+
+    expect(cmd, contains("-TaskName 'bClock_alarm_w'"));
+    expect(cmd, contains('-WakeToRun'));
+    expect(cmd, contains('-AllowStartIfOnBatteries'));
+    expect(cmd, contains('-DontStopIfGoingOnBatteries'));
+    // No 72-hour limit killing the bClock the task launched.
+    expect(cmd, contains('-ExecutionTimeLimit ([TimeSpan]::Zero)'));
   });
 }

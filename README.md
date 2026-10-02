@@ -90,6 +90,10 @@ Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm
 
 - Alarms fire while bClock is closed only when the user is **logged in**
   (the scheduled tasks use the default trigger settings).
+- The tasks ask Windows to **wake the PC from sleep**, which only works when
+  the power plan's "Allow wake timers" option is on. It is often off on
+  battery: check *Power Options → Change advanced power settings → Sleep →
+  Allow wake timers*.
 
 ## Project layout
 
