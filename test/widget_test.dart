@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plinth_blocks/plinth_blocks.dart';
 
 import 'package:bclock/l10n/app_localizations.dart';
+import 'package:bclock/models/alarm_model.dart';
 import 'package:bclock/providers/app_provider.dart';
+import 'package:bclock/screens/alarm_screen.dart';
+import 'package:bclock/services/alarm_service.dart';
 import 'package:bclock/screens/settings_screen.dart';
 import 'package:bclock/screens/stopwatch_screen.dart';
 import 'package:bclock/screens/world_clock_screen.dart';
@@ -22,8 +27,16 @@ Widget _app(Widget home, {Locale? locale}) => MaterialApp(
 void main() {
   // No real window under test: record the runner's window calls instead.
   final windowCalls = <MethodCall>[];
+  // Never touch the real scheduled tasks or the audio plugin.
+  final schedulerSyncs = <List<String>>[];
+  AlarmService.instance
+    ..syncScheduler = (alarms) async {
+      schedulerSyncs.add([for (final a in alarms) a.id]);
+    }
+    ..playSound = () async {};
   setUp(() {
     windowCalls.clear();
+    schedulerSyncs.clear();
     TestWidgetsFlutterBinding.ensureInitialized()
         .defaultBinaryMessenger
         .setMockMethodCallHandler(const MethodChannel('bclock/window'),
@@ -182,5 +195,57 @@ void main() {
 
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getStringList('world.cities'), ['Asia/Tokyo']);
+  });
+
+  Widget alarmApp(AppProvider provider) => ChangeNotifierProvider.value(
+        value: provider,
+        child: _app(const AlarmScreen()),
+      );
+
+  testWidgets('Alarms: first run seeds and saves the defaults', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final provider = AppProvider();
+    await provider.load();
+    await AlarmService.instance.load();
+    await tester.pumpWidget(alarmApp(provider));
+    await tester.pumpAndSettle();
+
+    expect(find.text('07:00'), findsOneWidget);
+    expect(find.text('08:30'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(AlarmService.alarmsStorageKey), contains('"1"'));
+    expect(schedulerSyncs.last, ['1', '2']);
+  });
+
+  testWidgets('Alarms: a fired one-shot is disabled, saved and shown off',
+      (tester) async {
+    final oneShot = AlarmModel(id: 'once', hour: 6, minute: 15);
+    SharedPreferences.setMockInitialValues({
+      'flutter.${AlarmService.alarmsStorageKey}':
+          jsonEncode([oneShot.toJson()]),
+    });
+    final provider = AppProvider();
+    await provider.load();
+    await AlarmService.instance.load();
+    await tester.pumpWidget(alarmApp(provider));
+    await tester.pumpAndSettle();
+    bool shownOn() =>
+        tester.widget<PlinthSwitch>(find.byType(PlinthSwitch)).value;
+    expect(shownOn(), isTrue);
+
+    // As if the scheduled task fired (fresh launch or forwarded).
+    await AlarmService.instance.fireById('once');
+    await tester.pumpAndSettle();
+
+    expect(shownOn(), isFalse);
+    final prefs = await SharedPreferences.getInstance();
+    final saved = jsonDecode(prefs.getString(AlarmService.alarmsStorageKey)!);
+    expect(saved[0]['isEnabled'], isFalse);
+    expect(schedulerSyncs.last, ['once']);
+
+    // Firing again in the same minute (the other path) is a no-op.
+    schedulerSyncs.clear();
+    await AlarmService.instance.fireById('once');
+    expect(schedulerSyncs, isEmpty);
   });
 }

@@ -37,17 +37,16 @@ void main(List<String> args) async {
   await appProvider.load();
 
   AlarmService.instance.navigatorKey = _navigatorKey;
-  AlarmService.instance.start();
+  await AlarmService.instance.load();
 
   // `--fire <alarmId>` is passed by the Windows Task Scheduler entry when
-  // an alarm fires while the app is closed. Trigger the popup after the
-  // first frame so the Navigator is mounted.
+  // an alarm fires while the app is closed. Start firing after the first
+  // frame so the popup has a Navigator.
   final fireId = _parseFireArg(args);
-  if (fireId != null) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AlarmService.instance.fireById(fireId);
-    });
-  }
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    AlarmService.instance.start();
+    if (fireId != null) AlarmService.instance.fireById(fireId);
+  });
   // Only one bClock runs per exe: the Windows runner folds a later launch
   // (e.g. a task firing while we're open) into this one and forwards its
   // args here.

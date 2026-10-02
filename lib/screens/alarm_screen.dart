@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:plinth_blocks/plinth_blocks.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm_model.dart';
 import '../providers/app_provider.dart';
@@ -18,43 +16,34 @@ class AlarmScreen extends StatefulWidget {
 }
 
 class _AlarmScreenState extends State<AlarmScreen> {
-  static const String _kAlarms = AlarmService.alarmsStorageKey;
-
-  final List<AlarmModel> _alarms = [];
+  // AlarmService owns the list (loaded before the first frame); this
+  // screen edits it in place and saves through the service.
+  final _service = AlarmService.instance;
+  List<AlarmModel> get _alarms => _service.alarms;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _service.addListener(_onAlarmsChanged);
+    // First run: seed after the first frame, when localizations exist.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_service.hasSavedAlarms) {
+        _service.setAlarms(_defaultAlarms());
+      }
+    });
   }
+
+  @override
+  void dispose() {
+    _service.removeListener(_onAlarmsChanged);
+    super.dispose();
+  }
+
+  void _onAlarmsChanged() => setState(() {});
 
   // ── Persistence ───────────────────────────────────────────
 
-  Future<void> _load() async {
-    final p = await SharedPreferences.getInstance();
-    final raw = p.getString(_kAlarms);
-    if (!mounted) return;
-    final loaded = raw == null
-        ? _defaultAlarms()
-        : (jsonDecode(raw) as List)
-            .map((e) => AlarmModel.fromJson(e as Map<String, dynamic>))
-            .toList();
-    if (!mounted) return;
-    setState(() {
-      _alarms
-        ..clear()
-        ..addAll(loaded);
-      _sort();
-    });
-    AlarmService.instance.setAlarms(_alarms);
-  }
-
-  Future<void> _save() async {
-    final p = await SharedPreferences.getInstance();
-    await p.setString(
-        _kAlarms, jsonEncode(_alarms.map((a) => a.toJson()).toList()));
-    AlarmService.instance.setAlarms(_alarms);
-  }
+  void _save() => _service.setAlarms(_alarms);
 
   /// Seeded once, in the language active at first run; after that the
   /// labels are the user's own text and are not re-translated.

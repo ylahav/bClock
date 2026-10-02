@@ -8,22 +8,38 @@ import '../l10n/app_localizations.dart';
 import '../models/alarm_model.dart';
 import 'alarm_scheduler.dart';
 
-/// Singleton service that checks alarms every 10 seconds and fires them.
-class AlarmService {
+/// Singleton that owns the alarm list: loads and saves it, checks it every
+/// 10 seconds and fires due alarms. AlarmScreen reads [alarms] and listens
+/// for changes (e.g. a one-shot disabling itself after firing).
+class AlarmService extends ChangeNotifier {
   AlarmService._();
   static final AlarmService instance = AlarmService._();
 
   static const Duration snoozeDuration = Duration(minutes: 5);
 
-  /// SharedPreferences key that AlarmScreen writes and this service reads
-  /// (needed by [fireById] which may run before AlarmScreen mounts).
   static const String alarmsStorageKey = 'alarms';
 
-  final AudioPlayer _player = AudioPlayer();
+  // Created on first ring, so merely touching the service (tests) doesn't
+  // need the audio plugin.
+  late final AudioPlayer _player = AudioPlayer();
   Timer? _timer;
 
-  /// Up-to-date alarm list — keep synced from AlarmScreen.
+  /// The alarm list. Mutate in place, then call [setAlarms] to save it.
   List<AlarmModel> alarms = [];
+
+  /// False until a list has been saved — on first run AlarmScreen seeds
+  /// the defaults. An empty saved list is a valid state.
+  bool get hasSavedAlarms => _hasSaved;
+  bool _hasSaved = false;
+
+  /// Reconciles Windows Task Scheduler; replaced in tests so they don't
+  /// touch the real scheduled tasks.
+  @visibleForTesting
+  Future<void> Function(List<AlarmModel>) syncScheduler = AlarmScheduler.sync;
+
+  /// Starts the looping alarm sound; replaced in tests (no audio plugin).
+  @visibleForTesting
+  late Future<void> Function() playSound = _playSound;
 
   /// Navigator key injected from main.dart for showing dialogs.
   GlobalKey<NavigatorState>? navigatorKey;
@@ -37,21 +53,53 @@ class AlarmService {
 
   // ── Lifecycle ─────────────────────────────────────────────
 
+  /// Reads the saved list. Awaited before the first frame, so the screen
+  /// and both firing paths share one list from the start.
+  Future<void> load() async {
+    final p = await SharedPreferences.getInstance();
+    final raw = p.getString(alarmsStorageKey);
+    _hasSaved = raw != null;
+    alarms = raw == null
+        ? []
+        : (jsonDecode(raw) as List)
+            .map((e) => AlarmModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+    notifyListeners();
+  }
+
+  /// Call after the first frame, so a due alarm's popup has a Navigator.
   void start() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 10), (_) => _check());
-    _check();
+    _timer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (_check()) _commit();
+    });
+    if (_check()) _commit();
   }
 
-  /// Keep the service in sync with the UI alarm list.
+  /// The single mutation entry point: replaces the list, saves it and
+  /// syncs the scheduler.
   void setAlarms(List<AlarmModel> alarms) {
     this.alarms = alarms;
+    _hasSaved = true;
     _check();
-    // Fire-and-forget — reconciles Windows Task Scheduler so alarms fire
-    // even when the app is closed.
-    unawaited(AlarmScheduler.sync(alarms));
+    _commit();
   }
 
+  /// Saves, notifies and fire-and-forget syncs Windows Task Scheduler so
+  /// alarms fire even when the app is closed.
+  void _commit() {
+    unawaited(_save());
+    unawaited(syncScheduler(alarms));
+    notifyListeners();
+  }
+
+  Future<void> _save() async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(
+        alarmsStorageKey, jsonEncode(alarms.map((a) => a.toJson()).toList()));
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     for (final t in _snoozeTimers.values) {
@@ -59,12 +107,16 @@ class AlarmService {
     }
     _snoozeTimers.clear();
     _player.dispose();
+    super.dispose();
   }
 
   // ── Check ─────────────────────────────────────────────────
 
-  void _check() {
+  /// Fires due alarms. Returns true if a one-shot was disabled, i.e. the
+  /// list changed and needs saving.
+  bool _check() {
     final now = DateTime.now();
+    var changed = false;
     for (final alarm in List<AlarmModel>.from(alarms)) {
       if (!alarm.isEnabled) continue;
       if (alarm.hour != now.hour) continue;
@@ -77,8 +129,12 @@ class AlarmService {
       _fire(alarm);
 
       // One-shot alarm → disable after firing
-      if (!alarm.repeat) alarm.isEnabled = false;
+      if (!alarm.repeat) {
+        alarm.isEnabled = false;
+        changed = true;
+      }
     }
+    return changed;
   }
 
   /// Records that [id] fired this minute. Returns false if it already had —
@@ -97,10 +153,14 @@ class AlarmService {
 
   // ── Fire ──────────────────────────────────────────────────
 
-  Future<void> _fire(AlarmModel alarm) async {
-    // Play sound (loops until dismissed)
+  Future<void> _playSound() async {
+    // Loops until dismissed
     await _player.setReleaseMode(ReleaseMode.loop);
     await _player.play(AssetSource('sounds/alarm.wav'));
+  }
+
+  Future<void> _fire(AlarmModel alarm) async {
+    await playSound();
 
     final ctx = navigatorKey?.currentContext;
     if (ctx != null && ctx.mounted) {
@@ -115,31 +175,16 @@ class AlarmService {
 
   Future<void> _stopSound() => _player.stop();
 
-  /// Load the alarm with [id] from prefs and fire it, unless it already
-  /// fired this minute. Intended for the `--fire` launch path (Windows Task
-  /// Scheduler → fresh process, or forwarded to the running one).
-  ///
-  /// TODO: race — AlarmScreen may load its own copy from prefs in parallel.
-  /// If AlarmScreen wins, its in-memory list has the one-shot marked
-  /// enabled; disable-and-save here is overwritten on the next AlarmScreen
-  /// mutation until app restart.
+  /// Fires the alarm with [id], unless it already fired this minute.
+  /// Intended for the `--fire` launch path (Windows Task Scheduler → fresh
+  /// process, or forwarded to the running one).
   Future<void> fireById(String id) async {
-    final p = await SharedPreferences.getInstance();
-    final raw = p.getString(alarmsStorageKey);
-    if (raw == null) return;
-
-    final list = (jsonDecode(raw) as List)
-        .map((e) => AlarmModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-    final index = list.indexWhere((a) => a.id == id);
-    if (index == -1) return;
-    final alarm = list[index];
-    if (!_markFired(alarm.id)) return;
+    final alarm = alarms.where((a) => a.id == id).firstOrNull;
+    if (alarm == null || !_markFired(alarm.id)) return;
 
     if (!alarm.repeat) {
       alarm.isEnabled = false;
-      await p.setString(
-          alarmsStorageKey, jsonEncode(list.map((a) => a.toJson()).toList()));
+      _commit();
     }
 
     await _fire(alarm);
