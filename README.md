@@ -142,3 +142,7 @@ template. To add a language:
 2. Run `flutter gen-l10n` (it also runs as part of `flutter run`/`build`).
 3. Add the language to the picker list in
    `lib/screens/settings_screen.dart`.
+
+## License
+
+[MIT](LICENSE).
