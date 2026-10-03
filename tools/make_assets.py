@@ -6,6 +6,7 @@ Writes:
   assets/sounds/alarm.wav               "Beeps": the default ring (loops)
   assets/sounds/chime.wav               "Chime": two soft bell notes
   assets/sounds/pulse.wav               "Soft pulse": a slow, low swell
+  assets/sounds/hour.wav                the hourly chime: one bell note
   assets/icons/app_icon.png             256 px: notifications
   assets/icons/tray_icon.png            64 px, bold: the tray icon
   assets/icons/app_icon_512.png         512 px: general use
@@ -93,6 +94,16 @@ def make_chime(path: Path) -> None:
         samples[end - fade + i] *= 1 - i / fade
     for i in range(end, len(samples)):
         samples[i] = 0.0
+    _write(path, samples)
+
+
+def make_hour_chime(path: Path) -> None:
+    """One bell note, played once on the hour: short and unobtrusive."""
+    samples = _bell(784.0, 1.4)
+    fade = int(RATE * 0.05)
+    for i in range(fade):
+        samples[len(samples) - fade + i] *= 1 - i / fade
+    samples[-1] = 0.0
     _write(path, samples)
 
 
@@ -242,5 +253,6 @@ if __name__ == "__main__":
     make_alarm(sounds / "alarm.wav")
     make_chime(sounds / "chime.wav")
     make_pulse(sounds / "pulse.wav")
+    make_hour_chime(sounds / "hour.wav")
     make_icons()
     print("Assets written.")

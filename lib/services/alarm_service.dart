@@ -38,7 +38,7 @@ class AlarmService extends ChangeNotifier {
   /// touching the service doesn't need the audio plugin; tests replace it
   /// to see what would be played.
   @visibleForTesting
-  RingAudio audio = _PlayerAudio();
+  RingAudio audio = RingAudio.player();
 
   /// What to play and how loud; set by AppProvider from the user's settings.
   SoundOptions sound = const SoundOptions();
@@ -474,6 +474,10 @@ class AlarmService extends ChangeNotifier {
 
 /// What AlarmService needs from an audio player.
 abstract class RingAudio {
+  /// A real player. Each is independent: playing on one doesn't stop
+  /// another.
+  factory RingAudio.player() = _PlayerAudio;
+
   /// Plays a bundled [asset] or a [file] on disk (exactly one is given),
   /// replacing whatever was playing.
   Future<void> play({

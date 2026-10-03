@@ -50,6 +50,8 @@ unknown publisher: choose **More info**, then **Run anyway**.
   own WAV, MP3 or M4A file, with a volume setting and an option to start
   quietly and rise to full volume over 30 seconds. Applies to alarms and the
   timer.
+- **Hourly chime** — an optional short bell at the top of each hour, between
+  hours you choose (8:00 to 22:00 by default), while bClock is running.
 - **Tray** — closing the window hides bClock in the system tray, so alarms,
   snooze, the timer and the stopwatch keep running. Click the tray icon to
   show it; right-click to quit. Can be turned off in Settings.

@@ -194,6 +194,57 @@ class SettingsScreen extends StatelessWidget {
 
           const _Divider(),
 
+          // ── Hourly chime ──────────────────────────────────
+          _SectionHeader(l.sectionChime),
+
+          _SwitchBlock(
+            child: PlinthSwitch(
+              label: l.hourlyChime,
+              description: l.hourlyChimeHint,
+              value: p.hourlyChime,
+              onChanged: p.setHourlyChime,
+            ),
+          ),
+
+          if (p.hourlyChime)
+            _SettingBlock(
+              title: l.chimeHours,
+              subtitle: l.chimeHoursHint,
+              // Side by side when there's room; stacked in a narrow window.
+              child: LayoutBuilder(builder: (context, box) {
+                final fields = [
+                  PlinthNumberInput(
+                    label: l.chimeFrom,
+                    value: p.chimeFromHour,
+                    min: 0,
+                    max: 23,
+                    size: PlinthSize.sm,
+                    onChanged: (v) => p.setChimeHours(from: v.toInt()),
+                  ),
+                  PlinthNumberInput(
+                    label: l.chimeUntil,
+                    value: p.chimeUntilHour,
+                    min: 0,
+                    max: 23,
+                    size: PlinthSize.sm,
+                    onChanged: (v) => p.setChimeHours(until: v.toInt()),
+                  ),
+                ];
+                return box.maxWidth >= 260
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: fields[0]),
+                          const SizedBox(width: 8),
+                          Expanded(child: fields[1]),
+                        ],
+                      )
+                    : PlinthStack(gap: PlinthSize.xs, children: fields);
+              }),
+            ),
+
+          const _Divider(),
+
           // ── Language ──────────────────────────────────────
           _SectionHeader(l.sectionLanguage),
 

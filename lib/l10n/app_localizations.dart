@@ -768,6 +768,48 @@ abstract class AppLocalizations {
   /// **'Preview'**
   String get previewSound;
 
+  /// No description provided for @sectionChime.
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly chime'**
+  String get sectionChime;
+
+  /// No description provided for @hourlyChime.
+  ///
+  /// In en, this message translates to:
+  /// **'Chime every hour'**
+  String get hourlyChime;
+
+  /// No description provided for @hourlyChimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A short bell on the hour, at the alarm volume, while bClock is running'**
+  String get hourlyChimeHint;
+
+  /// No description provided for @chimeHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Chime between'**
+  String get chimeHours;
+
+  /// No description provided for @chimeHoursHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours of the day (0 to 23), both included'**
+  String get chimeHoursHint;
+
+  /// No description provided for @chimeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get chimeFrom;
+
+  /// No description provided for @chimeUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get chimeUntil;
+
   /// No description provided for @sectionLanguage.
   ///
   /// In en, this message translates to:

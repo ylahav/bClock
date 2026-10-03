@@ -357,6 +357,28 @@ class AppLocalizationsHe extends AppLocalizations {
   String get previewSound => 'השמעה';
 
   @override
+  String get sectionChime => 'צלצול שעתי';
+
+  @override
+  String get hourlyChime => 'צלצול בכל שעה';
+
+  @override
+  String get hourlyChimeHint =>
+      'פעמון קצר בכל שעה עגולה, בעוצמת ההתראה, כל עוד bClock פועל';
+
+  @override
+  String get chimeHours => 'צלצול בין השעות';
+
+  @override
+  String get chimeHoursHint => 'שעות היממה (0 עד 23), כולל';
+
+  @override
+  String get chimeFrom => 'משעה';
+
+  @override
+  String get chimeUntil => 'עד שעה';
+
+  @override
   String get sectionLanguage => 'שפה';
 
   @override

@@ -360,6 +360,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get previewSound => 'Probar';
 
   @override
+  String get sectionChime => 'Campanada horaria';
+
+  @override
+  String get hourlyChime => 'Sonar cada hora';
+
+  @override
+  String get hourlyChimeHint =>
+      'Una campanada breve a cada hora en punto, al volumen de la alarma, mientras bClock está en ejecución';
+
+  @override
+  String get chimeHours => 'Sonar entre';
+
+  @override
+  String get chimeHoursHint => 'Horas del día (0 a 23), ambas incluidas';
+
+  @override
+  String get chimeFrom => 'Desde';
+
+  @override
+  String get chimeUntil => 'Hasta';
+
+  @override
   String get sectionLanguage => 'Idioma';
 
   @override

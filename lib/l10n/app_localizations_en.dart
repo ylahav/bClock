@@ -358,6 +358,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get previewSound => 'Preview';
 
   @override
+  String get sectionChime => 'Hourly chime';
+
+  @override
+  String get hourlyChime => 'Chime every hour';
+
+  @override
+  String get hourlyChimeHint =>
+      'A short bell on the hour, at the alarm volume, while bClock is running';
+
+  @override
+  String get chimeHours => 'Chime between';
+
+  @override
+  String get chimeHoursHint => 'Hours of the day (0 to 23), both included';
+
+  @override
+  String get chimeFrom => 'From';
+
+  @override
+  String get chimeUntil => 'Until';
+
+  @override
   String get sectionLanguage => 'Language';
 
   @override

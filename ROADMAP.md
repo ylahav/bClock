@@ -27,7 +27,6 @@ Nothing is queued. Pick from Later.
 ## Later
 
 - **Skip next** occurrence of a repeating alarm (e.g. on a holiday).
-- **Hourly chime** (optional).
 - **Keyboard shortcuts:** Space start/stop and L lap on the stopwatch, 1–4 to
   switch tabs.
 - **Export stopwatch laps** as CSV.
@@ -46,6 +45,8 @@ Nothing is queued. Pick from Later.
 
 ## Done
 
+- Hourly chime: an optional bell on the hour, within chosen hours of the
+  day, while bClock is running.
 - Mini mode: a small, frameless, always-on-top clock; drag to move,
   double-click to return; remembered across restarts.
 - Unanswered alarms stop after a minute and ring again a configurable number

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import '../models/sound_options.dart';
 import '../services/alarm_service.dart';
+import '../services/chime_service.dart';
 import '../services/mini_window.dart';
 import '../services/tray_service.dart';
 
@@ -40,6 +41,9 @@ class AppProvider extends ChangeNotifier {
   static const _kFadeIn = 'alarmFadeIn';
   static const _kRetries = 'alarmRetries';
   static const _kRetryMinutes = 'alarmRetryMinutes';
+  static const _kChime = 'hourlyChime';
+  static const _kChimeFrom = 'chimeFromHour';
+  static const _kChimeUntil = 'chimeUntilHour';
   static const _kShowNav = 'showNav';
   static const _kLocale = 'locale';
   static const _kWeekStart = 'weekStart';
@@ -53,6 +57,9 @@ class AppProvider extends ChangeNotifier {
   bool _miniMode = false;
   SoundOptions _sound = const SoundOptions();
   int _alarmRetries = AlarmService.defaultRetries;
+  bool _hourlyChime = false;
+  int _chimeFromHour = ChimeService.defaultFromHour;
+  int _chimeUntilHour = ChimeService.defaultUntilHour;
   int _alarmRetryMinutes = AlarmService.defaultRetryInterval.inMinutes;
   bool _showNav = true;
   WeekStart _weekStart = WeekStart.monday;
@@ -89,6 +96,12 @@ class AppProvider extends ChangeNotifier {
   int get alarmRetries => _alarmRetries;
   int get alarmRetryMinutes => _alarmRetryMinutes;
   static const int maxAlarmRetries = 10;
+
+  /// The hourly chime (off by default) and the hours of the day, both
+  /// included, between which it sounds. ChimeService holds copies.
+  bool get hourlyChime => _hourlyChime;
+  int get chimeFromHour => _chimeFromHour;
+  int get chimeUntilHour => _chimeUntilHour;
   static const int maxAlarmRetryMinutes = 60;
   bool get showNav => _showNav;
   WeekStart get weekStart => _weekStart;
@@ -118,6 +131,10 @@ class AppProvider extends ChangeNotifier {
     _alarmRetryMinutes =
         p.getInt(_kRetryMinutes) ?? AlarmService.defaultRetryInterval.inMinutes;
     _applyRetries();
+    _hourlyChime = p.getBool(_kChime) ?? false;
+    _chimeFromHour = p.getInt(_kChimeFrom) ?? ChimeService.defaultFromHour;
+    _chimeUntilHour = p.getInt(_kChimeUntil) ?? ChimeService.defaultUntilHour;
+    _applyChime();
     _showNav = p.getBool(_kShowNav) ?? true;
     _languageCode = p.getString(_kLocale);
     _weekStart =
@@ -156,6 +173,9 @@ class AppProvider extends ChangeNotifier {
       p.setBool(_kFadeIn, _sound.fadeIn),
       p.setInt(_kRetries, _alarmRetries),
       p.setInt(_kRetryMinutes, _alarmRetryMinutes),
+      p.setBool(_kChime, _hourlyChime),
+      p.setInt(_kChimeFrom, _chimeFromHour),
+      p.setInt(_kChimeUntil, _chimeUntilHour),
       p.setBool(_kShowNav, _showNav),
       p.setInt(_kWeekStart, _weekStart.index),
       _languageCode == null
@@ -259,6 +279,32 @@ class AppProvider extends ChangeNotifier {
     AlarmService.instance
       ..retries = _alarmRetries
       ..retryInterval = Duration(minutes: _alarmRetryMinutes);
+  }
+
+  /// Switches the hourly chime; switching it on plays it once, so the
+  /// user hears what they chose.
+  void setHourlyChime(bool value) {
+    _hourlyChime = value;
+    _applyChime();
+    if (value) ChimeService.instance.play();
+    notifyListeners();
+    _save();
+  }
+
+  void setChimeHours({int? from, int? until}) {
+    _chimeFromHour = (from ?? _chimeFromHour).clamp(0, 23);
+    _chimeUntilHour = (until ?? _chimeUntilHour).clamp(0, 23);
+    _applyChime();
+    notifyListeners();
+    _save();
+  }
+
+  void _applyChime() {
+    ChimeService.instance.configure(
+      enabled: _hourlyChime,
+      fromHour: _chimeFromHour,
+      untilHour: _chimeUntilHour,
+    );
   }
 
   /// Pass null to follow the OS locale.

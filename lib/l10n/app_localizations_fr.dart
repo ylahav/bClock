@@ -359,6 +359,28 @@ class AppLocalizationsFr extends AppLocalizations {
   String get previewSound => 'Écouter';
 
   @override
+  String get sectionChime => 'Carillon horaire';
+
+  @override
+  String get hourlyChime => 'Sonner chaque heure';
+
+  @override
+  String get hourlyChimeHint =>
+      'Une courte cloche à l\'heure pile, au volume de l\'alarme, tant que bClock est en cours d\'exécution';
+
+  @override
+  String get chimeHours => 'Sonner entre';
+
+  @override
+  String get chimeHoursHint => 'Heures de la journée (0 à 23), incluses';
+
+  @override
+  String get chimeFrom => 'De';
+
+  @override
+  String get chimeUntil => 'À';
+
+  @override
   String get sectionLanguage => 'Langue';
 
   @override
