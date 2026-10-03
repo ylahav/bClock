@@ -294,6 +294,46 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les alarmes et minuteurs continuent. Clic droit sur l\'icône de la zone de notification pour quitter.';
 
   @override
+  String get sectionAlarmSound => 'Son de l\'alarme';
+
+  @override
+  String get alarmSound => 'Son';
+
+  @override
+  String get alarmSoundHint => 'Utilisé par les alarmes et le minuteur';
+
+  @override
+  String get soundBeeps => 'Bips';
+
+  @override
+  String get soundChime => 'Carillon';
+
+  @override
+  String get soundPulse => 'Pulsation douce';
+
+  @override
+  String get soundCustom => 'Votre propre fichier…';
+
+  @override
+  String get chooseFile => 'Choisir un fichier…';
+
+  @override
+  String get soundFileMissing => 'Fichier introuvable. Les bips seront joués.';
+
+  @override
+  String get alarmVolume => 'Volume';
+
+  @override
+  String get fadeIn => 'Augmenter le volume progressivement';
+
+  @override
+  String get fadeInHint =>
+      'Commence doucement et atteint le volume maximal en 30 secondes';
+
+  @override
+  String get previewSound => 'Écouter';
+
+  @override
   String get sectionLanguage => 'Langue';
 
   @override

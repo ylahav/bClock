@@ -5,14 +5,24 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Next
 
-1. ⭐ **Code signing**, to remove SmartScreen's "unknown publisher" warning.
-   Route: [SignPath Foundation](https://signpath.org) (free for open
-   source). Done so far: public MIT repo, original assets, exe metadata,
-   GitHub Releases. Still to do: apply; on acceptance, add the "Code signing
-   policy" section they require to the README and sign in the release
-   workflow.
-2. ⭐ **Alarm sound options:** custom sounds, volume, and a gradual fade-in.
-3. ⭐ **Mini mode:** a tiny, borderless, always-on-top clock to park anywhere.
+1. ⭐ **Mini mode:** a tiny, borderless, always-on-top clock to park anywhere.
+
+## On hold
+
+- **Code signing**, to remove SmartScreen's "unknown publisher" warning.
+  The repo side is ready (public MIT repo, original assets, real exe
+  metadata, GitHub Releases); what's missing is a certificate. Options as of
+  October 2026:
+  - [SignPath Foundation](https://signpath.org): free for open source, but
+    wants an established project with a reputation. Revisit once bClock has
+    users and release history.
+  - Certum Open Source Code Signing: from about €49, a cloud certificate
+    (no hardware token). The realistic paid route for an individual.
+  - Azure Trusted Signing: individual developers in the USA and Canada
+    only.
+  - Microsoft Store: free for individuals, but only MSIX is signed by
+    Microsoft, and bClock dropped MSIX (its app container can block the
+    alarm tasks).
 
 ## Later
 
@@ -36,6 +46,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Alarm sound options: three built-in sounds or your own file, volume, and
+  a gradual volume increase, with Preview in Settings.
 - GitHub Releases: pushing a `v<version>` tag builds and publishes the
   installer. Exe metadata is real (publisher Yair Lahav), with saved data
   carried over from the old `com.example` folder.

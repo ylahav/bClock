@@ -294,6 +294,47 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las alarmas y los temporizadores siguen funcionando. Haz clic derecho en el icono de la bandeja para salir.';
 
   @override
+  String get sectionAlarmSound => 'Sonido de alarma';
+
+  @override
+  String get alarmSound => 'Sonido';
+
+  @override
+  String get alarmSoundHint => 'Lo usan las alarmas y el temporizador';
+
+  @override
+  String get soundBeeps => 'Pitidos';
+
+  @override
+  String get soundChime => 'Campanilla';
+
+  @override
+  String get soundPulse => 'Pulso suave';
+
+  @override
+  String get soundCustom => 'Tu propio archivo…';
+
+  @override
+  String get chooseFile => 'Elegir archivo…';
+
+  @override
+  String get soundFileMissing =>
+      'No se encuentra el archivo. Sonarán los pitidos.';
+
+  @override
+  String get alarmVolume => 'Volumen';
+
+  @override
+  String get fadeIn => 'Subir el volumen gradualmente';
+
+  @override
+  String get fadeInHint =>
+      'Empieza bajo y alcanza el volumen completo en 30 segundos';
+
+  @override
+  String get previewSound => 'Probar';
+
+  @override
   String get sectionLanguage => 'Idioma';
 
   @override

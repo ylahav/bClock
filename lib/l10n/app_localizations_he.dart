@@ -293,6 +293,45 @@ class AppLocalizationsHe extends AppLocalizations {
       'השעונים המעוררים והטיימרים ממשיכים לפעול. ליציאה, לחיצה ימנית על הסמל במגש המערכת.';
 
   @override
+  String get sectionAlarmSound => 'צליל ההתראה';
+
+  @override
+  String get alarmSound => 'צליל';
+
+  @override
+  String get alarmSoundHint => 'משמש את השעונים המעוררים ואת הטיימר';
+
+  @override
+  String get soundBeeps => 'צפצופים';
+
+  @override
+  String get soundChime => 'פעמון';
+
+  @override
+  String get soundPulse => 'פעימה רכה';
+
+  @override
+  String get soundCustom => 'קובץ משלך…';
+
+  @override
+  String get chooseFile => 'בחירת קובץ…';
+
+  @override
+  String get soundFileMissing => 'הקובץ לא נמצא. יושמעו צפצופים במקומו.';
+
+  @override
+  String get alarmVolume => 'עוצמה';
+
+  @override
+  String get fadeIn => 'הגברת העוצמה בהדרגה';
+
+  @override
+  String get fadeInHint => 'מתחיל בשקט ומגיע לעוצמה מלאה תוך 30 שניות';
+
+  @override
+  String get previewSound => 'השמעה';
+
+  @override
   String get sectionLanguage => 'שפה';
 
   @override

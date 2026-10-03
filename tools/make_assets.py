@@ -3,7 +3,9 @@
     python tools/make_assets.py
 
 Writes:
-  assets/sounds/alarm.wav               the alarm / timer ring (loops)
+  assets/sounds/alarm.wav               "Beeps": the default ring (loops)
+  assets/sounds/chime.wav               "Chime": two soft bell notes
+  assets/sounds/pulse.wav               "Soft pulse": a slow, low swell
   assets/icons/app_icon.png             256 px: notifications
   assets/icons/tray_icon.png            64 px, bold: the tray icon
   assets/icons/app_icon_512.png         512 px: general use
@@ -59,7 +61,62 @@ def make_alarm(path: Path) -> None:
         samples += _beep(1760.0 if i % 2 == 0 else 2349.3, 0.11)
         samples += _silence(0.09)
     samples += _silence(2.0 - len(samples) / RATE)
+    _write(path, samples)
 
+
+def _bell(freq: float, seconds: float) -> list[float]:
+    """A struck-bell note: a quick attack, then a long exponential decay."""
+    n = int(RATE * seconds)
+    attack = int(RATE * 0.005)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        s = 0.7 * math.sin(2 * math.pi * freq * t)
+        s += 0.2 * math.sin(2 * math.pi * freq * 2.0 * t) * math.exp(-t * 6)
+        s += 0.1 * math.sin(2 * math.pi * freq * 3.0 * t) * math.exp(-t * 9)
+        out.append(s * min(1.0, i / attack) * math.exp(-t * 3.2))
+    return out
+
+
+def make_chime(path: Path) -> None:
+    """Ding-dong: two bell notes a major third apart, then a rest.
+
+    Three seconds; the second note has decayed to silence by the end.
+    """
+    samples = _bell(659.3, 0.9) + _bell(523.3, 1.6)
+    samples += _silence(3.0 - len(samples) / RATE)
+    # The decay never reaches exactly zero: fade the tail so the loop
+    # doesn't click.
+    fade = int(RATE * 0.02)
+    end = int(RATE * 2.5)
+    for i in range(fade):
+        samples[end - fade + i] *= 1 - i / fade
+    for i in range(end, len(samples)):
+        samples[i] = 0.0
+    _write(path, samples)
+
+
+def make_pulse(path: Path) -> None:
+    """A low tone that swells and fades twice: the gentle option.
+
+    Three seconds, silent at both ends.
+    """
+    samples: list[float] = []
+    swell = int(RATE * 1.1)
+    for _ in range(2):
+        for i in range(swell):
+            t = i / RATE
+            env = math.sin(math.pi * i / swell) ** 2
+            s = 0.75 * math.sin(2 * math.pi * 440.0 * t)
+            s += 0.25 * math.sin(2 * math.pi * 660.0 * t)
+            samples.append(s * env)
+        samples += _silence(0.2)
+    samples += _silence(3.0 - len(samples) / RATE)
+    _write(path, samples)
+
+
+def _write(path: Path, samples: list[float]) -> None:
+    """16-bit mono WAV at 60% of full scale."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with wave.open(str(path), "wb") as w:
         w.setnchannels(1)
@@ -181,6 +238,9 @@ def make_icons() -> None:
 
 
 if __name__ == "__main__":
-    make_alarm(ROOT / "assets" / "sounds" / "alarm.wav")
+    sounds = ROOT / "assets" / "sounds"
+    make_alarm(sounds / "alarm.wav")
+    make_chime(sounds / "chime.wav")
+    make_pulse(sounds / "pulse.wav")
     make_icons()
     print("Assets written.")

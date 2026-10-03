@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:plinth_components/plinth_components.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../models/alarm_model.dart';
+import '../models/sound_options.dart';
 import 'app_window.dart';
 import 'notification_service.dart';
 import 'alarm_scheduler.dart';
@@ -21,10 +23,18 @@ class AlarmService extends ChangeNotifier {
 
   static const String alarmsStorageKey = 'alarms';
 
-  // Created on first ring, so merely touching the service (tests) doesn't
-  // need the audio plugin.
-  late final AudioPlayer _player = AudioPlayer();
+  /// The audio output. Its player is created on first use, so merely
+  /// touching the service doesn't need the audio plugin; tests replace it
+  /// to see what would be played.
+  @visibleForTesting
+  RingAudio audio = _PlayerAudio();
+
+  /// What to play and how loud; set by AppProvider from the user's settings.
+  SoundOptions sound = const SoundOptions();
+
   Timer? _timer;
+  Timer? _fadeTimer;
+  Timer? _previewTimer;
 
   /// The alarm list. Mutate in place, then call [setAlarms] to save it.
   List<AlarmModel> alarms = [];
@@ -59,7 +69,7 @@ class AlarmService extends ChangeNotifier {
   @visibleForTesting
   late Future<void> Function() playSound = _playSound;
   @visibleForTesting
-  late Future<void> Function() silenceSound = () => _player.stop();
+  late Future<void> Function() silenceSound = _silence;
 
   /// Navigator key injected from main.dart for showing dialogs.
   GlobalKey<NavigatorState>? navigatorKey;
@@ -159,7 +169,9 @@ class AlarmService extends ChangeNotifier {
       t.cancel();
     }
     _snoozeTimers.clear();
-    _player.dispose();
+    _fadeTimer?.cancel();
+    _previewTimer?.cancel();
+    audio.dispose();
     super.dispose();
   }
 
@@ -206,11 +218,64 @@ class AlarmService extends ChangeNotifier {
 
   // ── Fire ──────────────────────────────────────────────────
 
+  /// Loops [sound] until dismissed. With fade-in, starts quietly and steps
+  /// up to the set volume once a second over [SoundOptions.fadeDuration].
   Future<void> _playSound() async {
-    // Loops until dismissed
-    await _player.setReleaseMode(ReleaseMode.loop);
-    await _player.play(AssetSource('sounds/alarm.wav'));
+    final options = sound;
+    _cancelSoundTimers();
+    final start = options.fadeIn
+        ? options.volume * SoundOptions.fadeStart
+        : options.volume;
+    await _play(options, loop: true, volume: start);
+    if (!options.fadeIn) return;
+
+    final steps = SoundOptions.fadeDuration.inSeconds;
+    var step = 0;
+    _fadeTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      step++;
+      unawaited(
+          audio.setVolume(start + (options.volume - start) * step / steps));
+      if (step >= steps) t.cancel();
+    });
   }
+
+  /// Plays [options]' sound: the user's file if it is still there,
+  /// otherwise a bundled one (Beeps when a custom file has gone missing,
+  /// so a ring is never silent).
+  Future<void> _play(SoundOptions options,
+      {required bool loop, required double volume}) {
+    final path = options.customPath;
+    if (options.sound == AlarmSound.custom &&
+        path != null &&
+        File(path).existsSync()) {
+      return audio.play(file: path, loop: loop, volume: volume);
+    }
+    return audio.play(
+      asset: options.sound.asset ?? AlarmSound.beeps.asset,
+      loop: loop,
+      volume: volume,
+    );
+  }
+
+  Future<void> _silence() {
+    _cancelSoundTimers();
+    return audio.stop();
+  }
+
+  void _cancelSoundTimers() {
+    _fadeTimer?.cancel();
+    _previewTimer?.cancel();
+  }
+
+  /// Settings' Preview: plays the current sound once at the set volume (no
+  /// fade), cut off after [previewLimit] in case it is a long file.
+  Future<void> preview() async {
+    _cancelSoundTimers();
+    await _play(sound, loop: false, volume: sound.volume);
+    _previewTimer = Timer(previewLimit, () => unawaited(audio.stop()));
+  }
+
+  static const Duration previewLimit = Duration(seconds: 6);
 
   /// Toast ids: alarms below [_timerToastId], the timer at it.
   static int _alarmToastId(String id) => id.hashCode & 0x3fffffff;
@@ -227,8 +292,7 @@ class AlarmService extends ChangeNotifier {
       actions: [
         RingAction('snooze', l.snooze(snoozeDuration.inMinutes), Icons.snooze,
             () => snooze(alarm)),
-        RingAction('dismiss', l.dismiss, Icons.alarm_off, () {},
-            primary: true),
+        RingAction('dismiss', l.dismiss, Icons.alarm_off, () {}, primary: true),
       ],
     );
   }
@@ -333,6 +397,59 @@ class AlarmService extends ChangeNotifier {
       _snoozeTimers.remove(alarm.id);
       _fire(alarm);
     });
+  }
+}
+
+// ── Audio ───────────────────────────────────────────────────────
+
+/// What AlarmService needs from an audio player.
+abstract class RingAudio {
+  /// Plays a bundled [asset] or a [file] on disk (exactly one is given),
+  /// replacing whatever was playing.
+  Future<void> play({
+    String? asset,
+    String? file,
+    required bool loop,
+    required double volume,
+  });
+
+  Future<void> setVolume(double volume);
+  Future<void> stop();
+  void dispose();
+}
+
+class _PlayerAudio implements RingAudio {
+  late final AudioPlayer _player = AudioPlayer();
+  bool _created = false;
+
+  AudioPlayer get _p {
+    _created = true;
+    return _player;
+  }
+
+  @override
+  Future<void> play({
+    String? asset,
+    String? file,
+    required bool loop,
+    required double volume,
+  }) async {
+    await _p.setReleaseMode(loop ? ReleaseMode.loop : ReleaseMode.stop);
+    await _p.play(
+      file != null ? DeviceFileSource(file) : AssetSource(asset!),
+      volume: volume,
+    );
+  }
+
+  @override
+  Future<void> setVolume(double volume) => _p.setVolume(volume);
+
+  @override
+  Future<void> stop() => _p.stop();
+
+  @override
+  void dispose() {
+    if (_created) _player.dispose();
   }
 }
 

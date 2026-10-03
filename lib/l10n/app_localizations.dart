@@ -642,6 +642,84 @@ abstract class AppLocalizations {
   /// **'Alarms and timers keep working. Right-click the tray icon to quit.'**
   String get trayHintBody;
 
+  /// No description provided for @sectionAlarmSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarm sound'**
+  String get sectionAlarmSound;
+
+  /// No description provided for @alarmSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get alarmSound;
+
+  /// No description provided for @alarmSoundHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Played by alarms and the timer'**
+  String get alarmSoundHint;
+
+  /// No description provided for @soundBeeps.
+  ///
+  /// In en, this message translates to:
+  /// **'Beeps'**
+  String get soundBeeps;
+
+  /// No description provided for @soundChime.
+  ///
+  /// In en, this message translates to:
+  /// **'Chime'**
+  String get soundChime;
+
+  /// No description provided for @soundPulse.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft pulse'**
+  String get soundPulse;
+
+  /// No description provided for @soundCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own file…'**
+  String get soundCustom;
+
+  /// No description provided for @chooseFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose file…'**
+  String get chooseFile;
+
+  /// No description provided for @soundFileMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'File not found. Beeps will play instead.'**
+  String get soundFileMissing;
+
+  /// No description provided for @alarmVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get alarmVolume;
+
+  /// No description provided for @fadeIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase volume gradually'**
+  String get fadeIn;
+
+  /// No description provided for @fadeInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start quietly and reach full volume over 30 seconds'**
+  String get fadeInHint;
+
+  /// No description provided for @previewSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get previewSound;
+
   /// No description provided for @sectionLanguage.
   ///
   /// In en, this message translates to:

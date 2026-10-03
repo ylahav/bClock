@@ -293,6 +293,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'Alarms and timers keep working. Right-click the tray icon to quit.';
 
   @override
+  String get sectionAlarmSound => 'Alarm sound';
+
+  @override
+  String get alarmSound => 'Sound';
+
+  @override
+  String get alarmSoundHint => 'Played by alarms and the timer';
+
+  @override
+  String get soundBeeps => 'Beeps';
+
+  @override
+  String get soundChime => 'Chime';
+
+  @override
+  String get soundPulse => 'Soft pulse';
+
+  @override
+  String get soundCustom => 'Your own file…';
+
+  @override
+  String get chooseFile => 'Choose file…';
+
+  @override
+  String get soundFileMissing => 'File not found. Beeps will play instead.';
+
+  @override
+  String get alarmVolume => 'Volume';
+
+  @override
+  String get fadeIn => 'Increase volume gradually';
+
+  @override
+  String get fadeInHint =>
+      'Start quietly and reach full volume over 30 seconds';
+
+  @override
+  String get previewSound => 'Preview';
+
+  @override
   String get sectionLanguage => 'Language';
 
   @override
