@@ -11,6 +11,15 @@ UI kit.
 |---|---|
 | ![bClock in light theme, analog and digital clock](docs/screenshots/clock-light.png) | ![bClock in dark theme, analog and digital clock](docs/screenshots/clock-dark.png) |
 
+## Download
+
+Get the installer from the
+[latest release](https://github.com/ylahav/bClock/releases/latest). It
+installs for the current user, without an admin prompt.
+
+The installer isn't code-signed yet, so Windows SmartScreen warns about an
+unknown publisher: choose **More info**, then **Run anyway**.
+
 ## Features
 
 - **Clock** — analog, digital, or both stacked, in three sizes. The window
@@ -77,6 +86,11 @@ release build, then compiles the installer with the version from
 prompt, adds a Start menu entry, and its uninstaller also removes the alarm
 scheduled tasks. Unsigned, so SmartScreen warns about an unknown publisher.
 CI builds it on every push to `main` (artifact `bclock-setup-<sha>`).
+
+**Releasing.** Set `version:` in `pubspec.yaml`, then tag that commit
+`v<version>` and push the tag. The release workflow checks that the tag
+matches the pubspec, builds the installer, and publishes a GitHub Release
+with it attached.
 
 ## How alarms work
 

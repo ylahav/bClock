@@ -1,0 +1,67 @@
+name: Release
+
+# Pushing a tag like v1.2.2 builds the installer and publishes a GitHub
+# Release with it attached.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # create the release
+
+env:
+  # Keep in step with ci.yml and the local toolchain (`flutter --version`).
+  FLUTTER_VERSION: 3.47.5
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # A tag that disagrees with pubspec.yaml would publish an installer
+      # whose name and version don't match the release.
+      - name: Check the tag matches the pubspec version
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path pubspec.yaml -Pattern '^version:\s*([0-9.]+)').Matches[0].Groups[1].Value
+          if ("v$version" -ne $env:GITHUB_REF_NAME) {
+            throw "Tag $env:GITHUB_REF_NAME does not match pubspec version $version."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter analyze
+
+      - run: flutter test
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+          ./installer/build.ps1
+
+      - name: Publish the release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = '${{ steps.version.outputs.version }}'
+          $notes = "The installer is not code-signed yet, so Windows SmartScreen " +
+            "shows an `"unknown publisher`" warning: choose **More info**, then " +
+            "**Run anyway**."
+          gh release create $env:GITHUB_REF_NAME "build\installer\bClock_Setup_$version.exe" `
+            --title "bClock $version" --notes $notes --generate-notes --verify-tag
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }

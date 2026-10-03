@@ -6,8 +6,11 @@ up. Items move to **Done** with the PR that shipped them.
 ## Next
 
 1. ⭐ **Code signing**, to remove SmartScreen's "unknown publisher" warning.
-   Needs a certificate first (a purchase or a signing service); then
-   `installer/build.ps1` signs `bclock.exe` and the installer.
+   Route: [SignPath Foundation](https://signpath.org) (free for open
+   source). Done so far: public MIT repo, original assets, exe metadata,
+   GitHub Releases. Still to do: apply; on acceptance, add the "Code signing
+   policy" section they require to the README and sign in the release
+   workflow.
 2. ⭐ **Alarm sound options:** custom sounds, volume, and a gradual fade-in.
 3. ⭐ **Mini mode:** a tiny, borderless, always-on-top clock to park anywhere.
 
@@ -33,6 +36,10 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- GitHub Releases: pushing a `v<version>` tag builds and publishes the
+  installer. Exe metadata is real (publisher Yair Lahav), with saved data
+  carried over from the old `com.example` folder.
+- Original, generated alarm sound and icons (`tools/make_assets.py`).
 - Scheduler failures are visible: the sync verifies its tasks, runs once
   edits settle, and the Alarm tab warns (with Try again) when it fails.
 - Meeting planner in World clocks: a time slider previews every city, with
