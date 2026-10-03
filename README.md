@@ -22,6 +22,9 @@ UI kit.
   hours, minutes and seconds (tap the time, or *Custom…*), and ±1 minute. Like
   the stopwatch it survives the app closing, and it rings even when bClock
   isn't running, the same way alarms do.
+- **Meeting planner** — in World clocks, a time slider previews every city at
+  a chosen time today and highlights the ones in working hours (9:00 to
+  18:00 there).
 - **World clocks** — pick cities from a list of 39; times are DST-aware and show
   the local zone abbreviation (EST/EDT, CET/CEST…). Shown as analog, digital, or
   both.

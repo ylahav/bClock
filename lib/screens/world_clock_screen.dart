@@ -36,8 +36,19 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
   // IANA zone ids of the shown cities, in display order.
   static const String _kCities = 'world.cities';
 
+  // Meeting planner: 15-minute steps through today, in local time.
+  static const _planStep = 15;
+  static const _planMax = 24 * 60 - _planStep;
+  // Working hours in a city's own time, for the planner's highlight.
+  static const _workStart = 9;
+  static const _workEnd = 18;
+
   late DateTime _utcNow;
   late Timer _timer;
+
+  /// Meeting planner: minutes after local midnight today that the cards
+  /// preview, or null for the live clocks.
+  int? _planMinutes;
 
   final List<WorldCity> _active = List.from(WorldCity.defaults);
 
@@ -78,8 +89,33 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
     await p.setStringList(_kCities, _active.map((c) => c.tz).toList());
   }
 
+  /// The moment the cards show: the planned time, or now.
+  DateTime get _shownUtc {
+    final minutes = _planMinutes;
+    if (minutes == null) return _utcNow;
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day)
+        .add(Duration(minutes: minutes))
+        .toUtc();
+  }
+
   tz.TZDateTime _cityTime(WorldCity city) =>
-      tz.TZDateTime.from(_utcNow, tz.getLocation(city.tz));
+      tz.TZDateTime.from(_shownUtc, tz.getLocation(city.tz));
+
+  bool _isWorking(tz.TZDateTime t) => t.hour >= _workStart && t.hour < _workEnd;
+
+  /// Enters the planner at the current time (rounded down to a step), or
+  /// goes back to the live clocks.
+  void _togglePlanner() {
+    setState(() {
+      if (_planMinutes != null) {
+        _planMinutes = null;
+      } else {
+        final now = DateTime.now();
+        _planMinutes = (now.hour * 60 + now.minute) ~/ _planStep * _planStep;
+      }
+    });
+  }
 
   /// Puts [city] at [to], where the card it was dropped on (or the
   /// neighbour it was moved past) was.
@@ -130,6 +166,18 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
       background: Theme.of(context).scaffoldBackgroundColor,
       actions: [
         PlinthTooltip(
+          message: l.planMeeting,
+          child: PlinthActionIcon(
+            semanticLabel: l.planMeeting,
+            icon: const Icon(Icons.event_outlined),
+            onPressed: _active.isEmpty ? null : _togglePlanner,
+            variant: _planMinutes == null
+                ? PlinthVariant.subtle
+                : PlinthVariant.light,
+            color: _planMinutes == null ? 'gray' : null,
+          ),
+        ),
+        PlinthTooltip(
           message: l.addCity,
           child: PlinthActionIcon(
             semanticLabel: l.addCity,
@@ -141,11 +189,28 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
         ),
       ],
       // ── Clock style toggle ─────────────────────────────
-      below: Center(
-        child: ClockViewToggle(
-          view: p.clockView,
-          onChanged: p.setClockView,
-        ),
+      below: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Center(
+            child: ClockViewToggle(
+              view: p.clockView,
+              onChanged: p.setClockView,
+            ),
+          ),
+          if (_planMinutes case final minutes?) ...[
+            const SizedBox(height: 8),
+            _PlannerBar(
+              minutes: minutes,
+              max: _planMax,
+              step: _planStep,
+              working: _active.where((c) => _isWorking(_cityTime(c))).length,
+              total: _active.length,
+              onChanged: (m) => setState(() => _planMinutes = m),
+              onNow: _togglePlanner,
+            ),
+          ],
+        ],
       ),
       body: Column(
         children: [
@@ -180,9 +245,11 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
                           };
                       // …capped to the window, since the window height is
                       // set by the Clock tab. The card's clock scales down
-                      // to fit; below _minCardHeight the grid scrolls.
+                      // to fit. Never below _minCardHeight, whether the
+                      // window is short (the grid scrolls) or the cells are
+                      // narrow (the ideal height alone is too short).
                       final fitH = constraints.maxHeight - _gridBottomPad;
-                      final cellH = min(idealH, max(fitH, _minCardHeight));
+                      final cellH = max(_minCardHeight, min(idealH, fitH));
                       return GridView.builder(
                         padding: const EdgeInsets.only(bottom: _gridBottomPad),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -215,6 +282,9 @@ class _WorldClockScreenState extends State<WorldClockScreen> {
                                 cityTime: _cityTime(city),
                                 view: p.clockView,
                                 cellWidth: cellW,
+                                working: _planMinutes == null
+                                    ? null
+                                    : _isWorking(_cityTime(city)),
                                 onDelete: () => _removeCity(city),
                               ),
                             ),
@@ -237,6 +307,10 @@ class _WorldCard extends StatelessWidget {
   final tz.TZDateTime cityTime;
   final ClockView view;
   final double cellWidth;
+
+  /// Meeting planner: whether [cityTime] is in working hours there. Null
+  /// outside the planner (live clocks, no highlight).
+  final bool? working;
   final VoidCallback onDelete;
 
   const _WorldCard({
@@ -244,6 +318,7 @@ class _WorldCard extends StatelessWidget {
     required this.cityTime,
     required this.view,
     required this.cellWidth,
+    this.working,
     required this.onDelete,
   });
 
@@ -281,7 +356,26 @@ class _WorldCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.plinth;
+    final l = AppLocalizations.of(context);
+    final workColor = theme.readableOn('green', theme.surface);
 
+    // Planner: cities in working hours stand out, the rest step back.
+    return Opacity(
+      opacity: working == false ? 0.5 : 1,
+      child: DecoratedBox(
+        position: DecorationPosition.foreground,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(theme.radius[PlinthSize.lg]!),
+          border:
+              working == true ? Border.all(color: workColor, width: 2) : null,
+        ),
+        child: _card(context, theme, l, workColor),
+      ),
+    );
+  }
+
+  Widget _card(BuildContext context, PlinthTheme theme, AppLocalizations l,
+      Color workColor) {
     return PlinthPaper(
       p: PlinthSize.xs,
       radius: PlinthSize.lg,
@@ -298,15 +392,24 @@ class _WorldCard extends StatelessWidget {
                 // Header: day/night icon + city name
                 Row(
                   children: [
-                    Icon(
-                      _isDay
-                          ? Icons.wb_sunny_outlined
-                          : Icons.nights_stay_outlined,
-                      size: 14,
-                      color: _isDay
-                          ? theme.readableOn(theme.primaryColor, theme.surface)
-                          : theme.textMuted,
-                    ),
+                    if (working == true)
+                      Icon(
+                        Icons.work_outline,
+                        size: 14,
+                        color: workColor,
+                        semanticLabel: l.workingHours,
+                      )
+                    else
+                      Icon(
+                        _isDay
+                            ? Icons.wb_sunny_outlined
+                            : Icons.nights_stay_outlined,
+                        size: 14,
+                        color: _isDay
+                            ? theme.readableOn(
+                                theme.primaryColor, theme.surface)
+                            : theme.textMuted,
+                      ),
                     const SizedBox(width: 5),
                     Expanded(
                       child: PlinthText(
@@ -363,12 +466,81 @@ class _WorldCard extends StatelessWidget {
             end: 0,
             child: PlinthCloseButton(
               size: PlinthSize.xs,
-              semanticLabel: AppLocalizations.of(context).removeCity(city.city),
+              semanticLabel: l.removeCity(city.city),
               onPressed: onDelete,
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Meeting planner ────────────────────────────────────────────
+
+/// The planner's time slider: the chosen local time, the slider, "Now" to
+/// go back to the live clocks, and how many cities are in working hours.
+class _PlannerBar extends StatelessWidget {
+  final int minutes;
+  final int max;
+  final int step;
+  final int working;
+  final int total;
+  final ValueChanged<int> onChanged;
+  final VoidCallback onNow;
+
+  const _PlannerBar({
+    required this.minutes,
+    required this.max,
+    required this.step,
+    required this.working,
+    required this.total,
+    required this.onChanged,
+    required this.onNow,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final time = '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
+        '${(minutes % 60).toString().padLeft(2, '0')}';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            PlinthClock(time, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Semantics(
+                label: l.meetingTime,
+                value: time,
+                child: PlinthSlider(
+                  value: minutes.toDouble(),
+                  max: max.toDouble(),
+                  divisions: max ~/ step,
+                  size: PlinthSize.sm,
+                  label: time,
+                  onChanged: (v) => onChanged((v / step).round() * step),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            PlinthButton(
+              variant: PlinthVariant.subtle,
+              size: PlinthSize.xs,
+              onPressed: onNow,
+              child: Text(l.planNow),
+            ),
+          ],
+        ),
+        PlinthText(
+          l.planSummary(working, total),
+          size: PlinthSize.xs,
+          color: 'gray',
+        ),
+      ],
     );
   }
 }

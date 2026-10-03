@@ -60,6 +60,21 @@
   },
   "moveCityEarlier": "Move earlier",
   "moveCityLater": "Move later",
+  "planMeeting": "Plan a meeting",
+  "planNow": "Now",
+  "planSummary": "{count} of {total} in working hours",
+  "@planSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "workingHours": "Working hours",
+  "meetingTime": "Meeting time",
   "searchCities": "Search cities…",
   "alarmsTitle": "Alarms",
   "addAlarm": "Add alarm",

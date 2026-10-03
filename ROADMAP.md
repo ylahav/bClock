@@ -5,9 +5,7 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Next
 
-- ⭐ **Meeting planner** in World clocks: a time slider that shows every city
-  at that moment, with working hours highlighted.
-- **Make scheduler failures visible.** Each alarm change re-registers all tasks
+- ⭐ **Make scheduler failures visible.** Each alarm change re-registers all tasks
   through a hidden PowerShell and ignores errors. Sync once edits settle, and
   warn when it fails, so an alarm never silently won't ring.
 
@@ -34,6 +32,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Meeting planner in World clocks: a time slider previews every city, with
+  working hours highlighted and counted.
 - Keep running in the tray: closing hides bClock (setting, on by default);
   tray icon shows it, right-click to quit; a ring brings the window back.
 - Windows notifications for a ringing alarm or timer, with Snooze / +1 min /

@@ -336,6 +336,36 @@ abstract class AppLocalizations {
   /// **'Move later'**
   String get moveCityLater;
 
+  /// No description provided for @planMeeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan a meeting'**
+  String get planMeeting;
+
+  /// No description provided for @planNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get planNow;
+
+  /// No description provided for @planSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} of {total} in working hours'**
+  String planSummary(int count, int total);
+
+  /// No description provided for @workingHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Working hours'**
+  String get workingHours;
+
+  /// No description provided for @meetingTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting time'**
+  String get meetingTime;
+
   /// No description provided for @searchCities.
   ///
   /// In en, this message translates to:

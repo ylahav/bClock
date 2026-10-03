@@ -132,6 +132,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get moveCityLater => 'Déplacer après';
 
   @override
+  String get planMeeting => 'Planifier une réunion';
+
+  @override
+  String get planNow => 'Maintenant';
+
+  @override
+  String planSummary(int count, int total) {
+    return '$count sur $total en heures de bureau';
+  }
+
+  @override
+  String get workingHours => 'Heures de bureau';
+
+  @override
+  String get meetingTime => 'Heure de la réunion';
+
+  @override
   String get searchCities => 'Rechercher des villes…';
 
   @override
