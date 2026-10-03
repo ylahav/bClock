@@ -1,7 +1,7 @@
 name: bclock
 description: A minimalist clock app with analog/digital, stopwatch, world clocks, and alarms.
 publish_to: 'none'
-version: 1.2.0
+version: 1.2.1
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
