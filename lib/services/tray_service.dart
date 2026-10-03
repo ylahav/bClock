@@ -26,6 +26,7 @@ class TrayService with WindowListener {
 
   // Keep references: a collected TrayIcon removes the icon.
   TrayIcon? _icon;
+  Image? _image;
   MenuItem? _showItem;
   MenuItem? _quitItem;
   bool _ready = false;
@@ -46,7 +47,8 @@ class TrayService with WindowListener {
       return; // no tray: the X keeps quitting
     }
 
-    icon.icon = ImageAsset.fromAsset('assets/icons/app_icon.png');
+    final image = ImageAsset.fromAsset('assets/icons/app_icon.png');
+    icon.icon = image;
     icon.setTooltip('bClock');
     showItem.addListener((e) {
       if (e is MenuItemClickedEvent) unawaited(AppWindow.raise());
@@ -63,7 +65,15 @@ class TrayService with WindowListener {
       if (e is TrayIconClickedEvent) unawaited(_toggle());
     });
 
+    // A new TrayIcon is hidden until shown. If it won't show, leave the X
+    // quitting: hiding to a tray with no icon strands bClock, reachable
+    // only from Task Manager.
+    if (!icon.setVisible(true) || !icon.isVisible()) {
+      icon.dispose();
+      return;
+    }
     _icon = icon;
+    _image = image;
     _showItem = showItem;
     _quitItem = quitItem;
     _ready = true;
@@ -98,6 +108,8 @@ class TrayService with WindowListener {
     await windowManager.setPreventClose(false);
     _icon?.dispose();
     _icon = null;
+    _image?.dispose();
+    _image = null;
     await windowManager.destroy();
   }
 
