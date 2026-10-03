@@ -5,9 +5,6 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Next
 
-- ⭐ **Make scheduler failures visible.** Each alarm change re-registers all tasks
-  through a hidden PowerShell and ignores errors. Sync once edits settle, and
-  warn when it fails, so an alarm never silently won't ring.
 
 ## Later
 
@@ -32,6 +29,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Scheduler failures are visible: the sync verifies its tasks, runs once
+  edits settle, and the Alarm tab warns (with Try again) when it fails.
 - Meeting planner in World clocks: a time slider previews every city, with
   working hours highlighted and counted.
 - Keep running in the tray: closing hides bClock (setting, on by default);

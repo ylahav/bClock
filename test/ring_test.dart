@@ -48,7 +48,10 @@ void main() {
   var silenced = 0;
   final alarms = AlarmService.instance
     ..navigatorKey = navigatorKey
-    ..syncScheduler = (_) async {}
+    ..syncDelay = Duration.zero
+    ..syncScheduler = (_) async {
+      return true;
+    }
     ..playSound = () async {}
     ..silenceSound = () async {
       silenced++;

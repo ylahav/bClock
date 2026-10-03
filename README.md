@@ -98,6 +98,10 @@ The `setup.exe` uninstaller removes the tasks. To remove them by hand:
 Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm:$false
 ```
 
+If Windows doesn't accept the tasks, the Alarm tab says so, with a *Try again*
+button: until it works, alarms only ring while bClock is running (which,
+with the tray, includes after you close the window).
+
 ### Known limitations
 
 - Alarms fire while bClock is closed only when the user is **logged in**

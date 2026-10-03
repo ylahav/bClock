@@ -39,33 +39,42 @@ class AlarmScheduler {
       '-ExecutionTimeLimit ([TimeSpan]::Zero)';
 
   /// Delete all bClock scheduled tasks and re-register one per enabled alarm.
-  /// Fire-and-forget; errors are swallowed.
-  static Future<void> sync(List<AlarmModel> alarms) async {
-    if (!Platform.isWindows) return;
+  /// Returns whether Windows now holds exactly those tasks; false means
+  /// alarms will only ring while bClock is running.
+  static Future<bool> sync(List<AlarmModel> alarms) async {
+    if (!Platform.isWindows) return true;
 
     final enabled = alarms.where((a) => a.isEnabled).toList();
     final exe = Platform.resolvedExecutable;
     final workDir = File(exe).parent.path;
-    await _run(_buildScript(enabled, exe, workDir));
+    return _run(buildScript(enabled, exe, workDir));
   }
 
   /// Registers the countdown timer's task to launch `bclock.exe
   /// --timer-done` at [endAt], or removes it when [endAt] is null.
-  /// Fire-and-forget; errors are swallowed.
-  static Future<void> syncTimer(DateTime? endAt) async {
-    if (!Platform.isWindows) return;
+  /// Returns whether PowerShell ran it without error.
+  static Future<bool> syncTimer(DateTime? endAt) async {
+    if (!Platform.isWindows) return true;
     final exe = Platform.resolvedExecutable;
-    await _run(timerCommand(endAt, exe, File(exe).parent.path));
+    return _run(timerCommand(endAt, exe, File(exe).parent.path));
   }
 
-  static Future<void> _run(String script) async {
+  /// Runs [script], stopping at its first error. True if it exited 0.
+  static Future<bool> _run(String script) async {
     try {
-      await Process.run(
+      final result = await Process.run(
         'powershell',
-        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script],
+        [
+          '-NoProfile',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-Command',
+          "\$ErrorActionPreference = 'Stop'\n$script",
+        ],
       );
+      return result.exitCode == 0;
     } catch (_) {
-      // Swallowed — nothing meaningful to do if PowerShell is unavailable.
+      return false; // PowerShell unavailable
     }
   }
 
@@ -90,7 +99,10 @@ class AlarmScheduler {
   // in paths. Escape any embedded single quote by doubling it.
   static String _quote(String s) => s.replaceAll("'", "''");
 
-  static String _buildScript(
+  /// The PowerShell that replaces every alarm task, then checks that
+  /// Windows holds exactly one per enabled alarm (exit 3 if not).
+  @visibleForTesting
+  static String buildScript(
     List<AlarmModel> enabled,
     String exe,
     String workDir,
@@ -104,6 +116,11 @@ class AlarmScheduler {
     for (final alarm in enabled) {
       buf.writeln(registerCommand(alarm, exe, workDir));
     }
+    // A registration can fail without an error PowerShell stops on.
+    buf.writeln(
+      "if (@(Get-ScheduledTask -TaskName '$taskPrefix*' "
+      "-ErrorAction SilentlyContinue).Count -ne ${enabled.length}) { exit 3 }",
+    );
     return buf.toString();
   }
 

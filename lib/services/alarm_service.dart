@@ -34,10 +34,25 @@ class AlarmService extends ChangeNotifier {
   bool get hasSavedAlarms => _hasSaved;
   bool _hasSaved = false;
 
-  /// Reconciles Windows Task Scheduler; replaced in tests so they don't
-  /// touch the real scheduled tasks.
+  /// Reconciles Windows Task Scheduler and reports whether it worked;
+  /// replaced in tests so they don't touch the real scheduled tasks.
   @visibleForTesting
-  Future<void> Function(List<AlarmModel>) syncScheduler = AlarmScheduler.sync;
+  Future<bool> Function(List<AlarmModel>) syncScheduler = AlarmScheduler.sync;
+
+  /// How long alarm edits must settle before the tasks are re-registered,
+  /// so toggling several weekdays is one PowerShell run, not seven. Zero
+  /// (in tests) syncs at once.
+  @visibleForTesting
+  Duration syncDelay = const Duration(seconds: 1);
+
+  /// True when the last sync failed: Windows doesn't hold the alarm tasks,
+  /// so alarms only ring while bClock is running. AlarmScreen warns.
+  bool get schedulerFailed => _schedulerFailed;
+  bool _schedulerFailed = false;
+
+  Timer? _syncTimer;
+  bool _syncing = false;
+  bool _syncAgain = false;
 
   /// Start and stop the looping ring; replaced in tests (no audio plugin).
   /// Callers use [startSound] / [stopSound].
@@ -76,7 +91,7 @@ class AlarmService extends ChangeNotifier {
   void start() {
     // Re-register the tasks once per launch, so tasks from an older
     // version pick up current settings without the user editing an alarm.
-    unawaited(syncScheduler(alarms));
+    unawaited(syncNow());
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (_check()) _commit();
@@ -93,12 +108,41 @@ class AlarmService extends ChangeNotifier {
     _commit();
   }
 
-  /// Saves, notifies and fire-and-forget syncs Windows Task Scheduler so
-  /// alarms fire even when the app is closed.
+  /// Saves, notifies, and syncs Windows Task Scheduler (once edits settle)
+  /// so alarms fire even when the app is closed.
   void _commit() {
     unawaited(_save());
-    unawaited(syncScheduler(alarms));
+    _syncTimer?.cancel();
+    if (syncDelay == Duration.zero) {
+      unawaited(syncNow());
+    } else {
+      _syncTimer = Timer(syncDelay, syncNow);
+    }
     notifyListeners();
+  }
+
+  /// Re-registers the alarm tasks now and records whether it worked; also
+  /// AlarmScreen's "Try again". Runs never overlap: a call during a run
+  /// queues exactly one more, with the list as it is by then.
+  Future<void> syncNow() async {
+    _syncTimer?.cancel();
+    if (_syncing) {
+      _syncAgain = true;
+      return;
+    }
+    _syncing = true;
+    try {
+      do {
+        _syncAgain = false;
+        final ok = await syncScheduler(List.of(alarms));
+        if (_schedulerFailed == ok) {
+          _schedulerFailed = !ok;
+          notifyListeners();
+        }
+      } while (_syncAgain);
+    } finally {
+      _syncing = false;
+    }
   }
 
   Future<void> _save() async {
@@ -110,6 +154,7 @@ class AlarmService extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
+    _syncTimer?.cancel();
     for (final t in _snoozeTimers.values) {
       t.cancel();
     }

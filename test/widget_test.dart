@@ -35,8 +35,10 @@ void main() {
   // Never touch the real scheduled tasks or the audio plugin.
   final schedulerSyncs = <List<String>>[];
   AlarmService.instance
+    ..syncDelay = Duration.zero
     ..syncScheduler = (alarms) async {
       schedulerSyncs.add([for (final a in alarms) a.id]);
+      return true;
     }
     ..playSound = () async {}
     ..silenceSound = () async {};

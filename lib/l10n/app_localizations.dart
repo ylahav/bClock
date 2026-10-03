@@ -378,6 +378,24 @@ abstract class AppLocalizations {
   /// **'Alarms'**
   String get alarmsTitle;
 
+  /// No description provided for @schedulerFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alarms can\'t be scheduled with Windows'**
+  String get schedulerFailedTitle;
+
+  /// No description provided for @schedulerFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They will only ring while bClock is running.'**
+  String get schedulerFailedBody;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
   /// No description provided for @addAlarm.
   ///
   /// In en, this message translates to:

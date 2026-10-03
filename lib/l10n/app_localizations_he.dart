@@ -155,6 +155,16 @@ class AppLocalizationsHe extends AppLocalizations {
   String get alarmsTitle => 'שעון מעורר';
 
   @override
+  String get schedulerFailedTitle =>
+      'לא ניתן לתזמן את השעונים המעוררים ב-Windows';
+
+  @override
+  String get schedulerFailedBody => 'הם יצלצלו רק כאשר bClock פועל.';
+
+  @override
+  String get tryAgain => 'ניסיון חוזר';
+
+  @override
   String get addAlarm => 'הוספת התראה';
 
   @override

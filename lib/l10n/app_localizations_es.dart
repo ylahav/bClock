@@ -155,6 +155,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get alarmsTitle => 'Alarmas';
 
   @override
+  String get schedulerFailedTitle =>
+      'No se pueden programar las alarmas en Windows';
+
+  @override
+  String get schedulerFailedBody =>
+      'Solo sonarán mientras bClock esté en ejecución.';
+
+  @override
+  String get tryAgain => 'Reintentar';
+
+  @override
   String get addAlarm => 'Añadir alarma';
 
   @override

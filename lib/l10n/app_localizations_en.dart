@@ -155,6 +155,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alarmsTitle => 'Alarms';
 
   @override
+  String get schedulerFailedTitle => 'Alarms can\'t be scheduled with Windows';
+
+  @override
+  String get schedulerFailedBody =>
+      'They will only ring while bClock is running.';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
   String get addAlarm => 'Add alarm';
 
   @override

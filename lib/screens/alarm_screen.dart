@@ -248,6 +248,29 @@ class _AlarmScreenState extends State<AlarmScreen> {
           ),
         ),
       ],
+      // Windows didn't take the alarm tasks: say so, since nothing else
+      // would until an alarm fails to ring.
+      below: _service.schedulerFailed
+          ? PlinthAlert(
+              color: 'yellow',
+              icon: const Icon(Icons.warning_amber_rounded),
+              title: l.schedulerFailedTitle,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PlinthText(l.schedulerFailedBody, size: PlinthSize.sm),
+                  const SizedBox(height: 8),
+                  PlinthButton(
+                    variant: PlinthVariant.light,
+                    size: PlinthSize.xs,
+                    color: 'yellow',
+                    onPressed: _service.syncNow,
+                    child: Text(l.tryAgain),
+                  ),
+                ],
+              ),
+            )
+          : null,
       body: _alarms.isEmpty
           ? Center(
               child: PlinthEmptyState(

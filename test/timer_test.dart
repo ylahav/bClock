@@ -23,7 +23,10 @@ void main() {
   var rings = 0;
   timer.syncScheduler = (endAt) async => scheduled.add(endAt);
   AlarmService.instance
-    ..syncScheduler = (_) async {}
+    ..syncDelay = Duration.zero
+    ..syncScheduler = (_) async {
+      return true;
+    }
     ..playSound = () async {
       rings++;
     }
