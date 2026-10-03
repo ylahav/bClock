@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "bclock" "\0"
+            VALUE "CompanyName", "Yair Lahav" "\0"
+            VALUE "FileDescription", "bClock" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "bclock" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "InternalName", "bClock" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Yair Lahav. MIT License." "\0"
             VALUE "OriginalFilename", "bclock.exe" "\0"
-            VALUE "ProductName", "bclock" "\0"
+            VALUE "ProductName", "bClock" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

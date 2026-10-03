@@ -9,6 +9,7 @@ import 'l10n/app_localizations.dart';
 import 'l10n/plinth_strings_delegate.dart';
 import 'providers/app_provider.dart';
 import 'services/alarm_service.dart';
+import 'services/legacy_data.dart';
 import 'services/notification_service.dart';
 import 'services/timer_service.dart';
 import 'services/tray_service.dart';
@@ -36,6 +37,9 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   tzdata.initializeTimeZones();
   await windowManager.ensureInitialized();
+
+  // Before the first SharedPreferences read (AppProvider.load).
+  await migrateLegacyData();
 
   final appProvider = AppProvider();
   await appProvider.load();

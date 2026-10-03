@@ -23,7 +23,7 @@
 AppId={{CC70185C-42F0-4F6E-B1DD-6DEAF9458CE9}
 AppName=bClock
 AppVersion={#AppVersion}
-AppPublisher=bClock
+AppPublisher=Yair Lahav
 DefaultDirName={autopf}\bClock
 DefaultGroupName=bClock
 DisableProgramGroupPage=yes
