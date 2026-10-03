@@ -47,7 +47,7 @@ class TrayService with WindowListener {
       return; // no tray: the X keeps quitting
     }
 
-    final image = ImageAsset.fromAsset('assets/icons/app_icon.png');
+    final image = ImageAsset.fromAsset('assets/icons/tray_icon.png');
     icon.icon = image;
     icon.setTooltip('bClock');
     showItem.addListener((e) {
