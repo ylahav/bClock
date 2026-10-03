@@ -4,11 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'app_window.dart';
 
-/// Windows toasts for a ringing alarm or timer, with action buttons.
+/// System notifications for a ringing alarm or timer.
 ///
-/// The plugin registers bClock's app id ([appUserModelId]) under HKCU on
-/// first use, so toasts work without an MSIX identity or a special Start
-/// menu shortcut. The uninstaller removes those keys.
+/// On Windows the plugin registers bClock's app id ([appUserModelId])
+/// under HKCU on first use, so toasts work without an MSIX identity or a
+/// special Start menu shortcut; the uninstaller removes those keys.
+///
+/// Windows and Linux notifications carry the ring's action buttons. macOS
+/// ones are plain for now (its buttons must be declared at startup as
+/// categories): clicking one brings bClock forward, where the popup has
+/// the same choices.
 ///
 /// Tests replace [instance] with a fake, so they never show real toasts.
 class NotificationService {
@@ -26,7 +31,7 @@ class NotificationService {
   bool _ready = false;
 
   Future<void> init() async {
-    if (!Platform.isWindows) return;
+    if (!(Platform.isWindows || Platform.isMacOS || Platform.isLinux)) return;
     final icon = [
       File(Platform.resolvedExecutable).parent.path,
       'data',
@@ -43,6 +48,14 @@ class NotificationService {
                 appUserModelId: appUserModelId,
                 guid: _activatorGuid,
                 iconPath: File(icon).existsSync() ? icon : null,
+              ),
+              macOS: const DarwinInitializationSettings(
+                // bClock plays its own sound and has no badge.
+                requestSoundPermission: false,
+                requestBadgePermission: false,
+              ),
+              linux: const LinuxInitializationSettings(
+                defaultActionName: 'bClock',
               ),
             ),
             onDidReceiveNotificationResponse: (r) =>
@@ -81,6 +94,16 @@ class NotificationService {
             // Stays on screen until answered; bClock plays its own sound.
             scenario: WindowsNotificationScenario.reminder,
             audio: WindowsNotificationAudio.silent(),
+          ),
+          macOS: const DarwinNotificationDetails(presentSound: false),
+          linux: LinuxNotificationDetails(
+            actions: [
+              for (final MapEntry(:key, :value) in actions.entries)
+                LinuxNotificationAction(key: key, label: value),
+            ],
+            // Critical notifications stay until answered.
+            urgency: LinuxNotificationUrgency.critical,
+            suppressSound: true,
           ),
         ),
       );

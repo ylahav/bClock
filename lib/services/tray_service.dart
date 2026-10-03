@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' show Size;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -38,7 +39,10 @@ class TrayService with WindowListener {
     required bool closeToTray,
     required AppLocalizations strings,
   }) async {
-    if (!Platform.isWindows || _ready) return;
+    if (_ready ||
+        !(Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+      return;
+    }
     final icon = TrayIcon.create();
     final menu = Menu.create();
     final showItem = MenuItem.createWithLabelAndType('', MenuItemType.normal);
@@ -49,6 +53,8 @@ class TrayService with WindowListener {
 
     final image = ImageAsset.fromAsset('assets/icons/tray_icon.png');
     icon.icon = image;
+    // The Mac menu bar doesn't scale the image down by itself.
+    if (Platform.isMacOS) icon.iconSize = const Size.square(18);
     icon.setTooltip('bClock');
     showItem.addListener((e) {
       if (e is MenuItemClickedEvent) unawaited(AppWindow.raise());

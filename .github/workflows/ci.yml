@@ -84,3 +84,70 @@ jobs:
           name: bclock-setup-${{ github.sha }}
           path: build/installer/*.exe
           retention-days: 14
+
+  build-linux:
+    name: Linux release build
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # GTK for Flutter itself; X11/XInput for the tray; GStreamer for
+      # audioplayers.
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libx11-dev libxi-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter build linux --release
+
+      # tar keeps the executable bit, which a zip artifact would lose.
+      - name: Pack the bundle
+        run: tar -czf bclock-linux-x64.tar.gz -C build/linux/x64/release/bundle .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bclock-linux-${{ github.sha }}
+          path: bclock-linux-x64.tar.gz
+          retention-days: 14
+
+  build-macos:
+    name: macOS release build
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter build macos --release
+
+      # ditto keeps the app bundle's symlinks and attributes intact.
+      - name: Pack the app
+        run: ditto -c -k --keepParent build/macos/Build/Products/Release/bClock.app bClock-macos.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bclock-macos-${{ github.sha }}
+          path: bClock-macos.zip
+          retention-days: 14

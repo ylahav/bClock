@@ -152,8 +152,16 @@ class AppProvider extends ChangeNotifier {
   /// Matches the native Windows title bar to the app theme — Flutter only
   /// paints the client area. Not window_manager.setBrightness: that one
   /// refuses a dark title bar while Windows itself is in light mode.
-  Future<void> _applyWindowBrightness() =>
-      _windowChannel.invokeMethod('setDarkTitleBar', isDark);
+  ///
+  /// Only the Windows runner implements this; macOS and Linux draw their
+  /// own title bars, and have no such channel.
+  Future<void> _applyWindowBrightness() async {
+    try {
+      await _windowChannel.invokeMethod('setDarkTitleBar', isDark);
+    } on MissingPluginException {
+      // Not Windows: nothing to match.
+    }
+  }
 
   Future<void> _save() async {
     final p = await SharedPreferences.getInstance();

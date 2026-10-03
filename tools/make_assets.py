@@ -11,6 +11,8 @@ Writes:
   assets/icons/tray_icon.png            64 px, bold: the tray icon
   assets/icons/app_icon_512.png         512 px: general use
   windows/runner/resources/app_icon.ico exe, taskbar and installer icon
+  macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_*.png
+                                        the macOS app icon, 16 to 1024 px
 
 Nothing here is third-party: the sound is synthesised below and the icon is
 drawn below (bClock's own analog clock face). Both are covered by the
@@ -237,6 +239,11 @@ def make_icons() -> None:
     draw_clock(weight=3.0, ticks="hours").resize((64, 64), Image.LANCZOS).save(
         icons / "tray_icon.png"
     )
+
+    mac = ROOT / "macos" / "Runner" / "Assets.xcassets" / "AppIcon.appiconset"
+    if mac.is_dir():
+        for px in (16, 32, 64, 128, 256, 512, 1024):
+            sized(px).save(mac / f"app_icon_{px}.png")
 
     ico_sizes = [16, 20, 24, 32, 40, 48, 64, 128, 256]
     frames = [sized(px) for px in ico_sizes]
