@@ -5,11 +5,14 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Next
 
+1. ⭐ **Code signing**, to remove SmartScreen's "unknown publisher" warning.
+   Needs a certificate first (a purchase or a signing service); then
+   `installer/build.ps1` signs `bclock.exe` and the installer.
+2. ⭐ **Alarm sound options:** custom sounds, volume, and a gradual fade-in.
+3. ⭐ **Mini mode:** a tiny, borderless, always-on-top clock to park anywhere.
 
 ## Later
 
-- **Mini mode:** a tiny, borderless, always-on-top clock to park anywhere.
-- **Alarm sound options:** custom sounds, volume, and a gradual fade-in.
 - **Skip next** occurrence of a repeating alarm (e.g. on a holiday).
 - **Hourly chime** (optional).
 - **Keyboard shortcuts:** Space start/stop and L lap on the stopwatch, 1–4 to
@@ -17,7 +20,8 @@ up. Items move to **Done** with the PR that shipped them.
 - **Export stopwatch laps** as CSV.
 - **Start with Windows** setting (a per-user Startup entry; no admin needed).
 - **Automatic updates:** check GitHub Releases on launch.
-- **Code signing**, to remove SmartScreen's "unknown publisher" warning.
+- **Timer scheduling warning:** the timer's task sync reports failure, but
+  only alarms show a warning for it.
 
 ## Housekeeping
 
