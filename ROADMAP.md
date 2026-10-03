@@ -10,9 +10,11 @@ Nothing is queued. Pick from Later.
 ## On hold
 
 - **Code signing**, to remove SmartScreen's "unknown publisher" warning.
-  The repo side is ready (public MIT repo, original assets, real exe
-  metadata, GitHub Releases); what's missing is a certificate. Options as of
-  October 2026:
+  **Chosen route: the Microsoft Store**, which signs MSIX packages for free.
+  The package side is ready (`msix_config`, an execution alias for the alarm
+  tasks, tested locally as a registered package). Waiting on: a Partner
+  Center account, the reserved app name, and its identity values. The other
+  options looked at, as of October 2026:
   - [SignPath Foundation](https://signpath.org): free for open source, but
     wants an established project with a reputation. Revisit once bClock has
     users and release history.
@@ -20,9 +22,6 @@ Nothing is queued. Pick from Later.
     (no hardware token). The realistic paid route for an individual.
   - Azure Trusted Signing: individual developers in the USA and Canada
     only.
-  - Microsoft Store: free for individuals, but only MSIX is signed by
-    Microsoft, and bClock dropped MSIX (its app container can block the
-    alarm tasks).
 
 ## Later
 

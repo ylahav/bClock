@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,7 @@ import 'package:bclock/screens/alarm_screen.dart';
 import 'package:bclock/services/alarm_scheduler.dart';
 import 'package:bclock/services/alarm_service.dart';
 import 'package:bclock/services/app_window.dart';
+import 'package:bclock/services/package_identity.dart';
 
 void main() {
   AppWindow.raise = () async {}; // no window plugin in tests
@@ -157,5 +159,12 @@ void main() {
     await tester.tap(find.text('Try again'));
     await tester.pumpAndSettle();
     expect(find.text(warning), findsNothing);
+  });
+
+  test('a plain (not packaged) build schedules its own exe', () {
+    // Tests run unpackaged; the Store build uses the alias instead.
+    expect(isPackaged, isFalse);
+    expect(AlarmScheduler.launchPath(), Platform.resolvedExecutable);
+    expect(executionAliasPath, endsWith(r'Microsoft\WindowsApps\bclock.exe'));
   });
 }

@@ -24,11 +24,13 @@ dependencies:
   tray_manager: ^0.7.0
   path_provider: ^2.1.6
   file_selector: ^1.1.0
+  ffi: ^2.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  msix: ^3.18.0
 
 flutter:
   generate: true
@@ -36,3 +38,25 @@ flutter:
   assets:
     - assets/sounds/
     - assets/icons/
+
+# Microsoft Store package (MSIX). `dart run msix:create --store` builds it.
+# identity_name, publisher and publisher_display_name must be the values
+# from Partner Center's "Product identity" page; these are placeholders.
+msix_config:
+  display_name: bClock
+  publisher_display_name: Yair Lahav
+  identity_name: bClock.LocalTest
+  publisher: CN=bClockLocalTest
+  logo_path: assets\icons\app_icon_512.png
+  architecture: x64
+  # Scheduled alarm and timer tasks start the packaged app through this
+  # alias (package_identity.dart: executionAlias).
+  execution_alias: bclock
+  # Toast buttons reach the app through this COM activator
+  # (NotificationService: the same GUID).
+  toast_activator:
+    clsid: 2BA2C34C-4786-42B2-AAB2-988855266B56
+    arguments: "--toast-activated"
+    display_name: bClock
+  sign_msix: false
+  install_certificate: false

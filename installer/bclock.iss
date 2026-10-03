@@ -54,8 +54,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; The Release folder is only ever added to, never cleaned, so locally it can
 ; hold leftovers that must not ship: *.msix from the old MSIX packaging, and
-; kernel_blob.bin from a debug build (a release build runs data\app.so).
-Source: "{#BuildDir}\*"; DestDir: "{app}"; Excludes: "*.pdb,*.msix,kernel_blob.bin"; Flags: ignoreversion recursesubdirs createallsubdirs
+; kernel_blob.bin from a debug build (a release build runs data\app.so), and
+; the package files `dart run msix:build/create` writes next to the exe.
+Source: "{#BuildDir}\*"; DestDir: "{app}"; Excludes: "*.pdb,*.msix,kernel_blob.bin,AppxManifest.xml,resources*.pri,\Images\*,\microsoft.system.package.metadata\*"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\bClock"; Filename: "{app}\{#AppExe}"

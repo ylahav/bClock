@@ -97,6 +97,14 @@ prompt, adds a Start menu entry, and its uninstaller also removes the alarm
 scheduled tasks. Unsigned, so SmartScreen warns about an unknown publisher.
 CI builds it on every push to `main` (artifact `bclock-setup-<sha>`).
 
+**Microsoft Store package (MSIX).** `dart run msix:create --store` builds
+`bclock.msix` for upload to Partner Center; the Store signs it, which is how
+bClock gets a signed install without buying a certificate. `msix_config:` in
+`pubspec.yaml` holds the package settings; its `identity_name`, `publisher`
+and `publisher_display_name` must match the Store's *Product identity* page
+(they are placeholders until the app is registered there). The `setup.exe`
+above stays the download for GitHub releases.
+
 **Releasing.** Set `version:` in `pubspec.yaml`, then tag that commit
 `v<version>` and push the tag. The release workflow checks that the tag
 matches the pubspec, builds the installer, and publishes a GitHub Release
@@ -121,6 +129,13 @@ The `setup.exe` uninstaller removes the tasks. To remove them by hand:
 ```powershell
 Get-ScheduledTask -TaskName 'bClock_alarm_*' | Unregister-ScheduledTask -Confirm:$false
 ```
+
+The Store (MSIX) build registers the same tasks, but they start bClock
+through its app execution alias,
+`%LOCALAPPDATA%\Microsoft\WindowsApps\bclock.exe`: a packaged app's own exe
+sits in a protected folder whose path changes with every update.
+Uninstalling the Store build can't remove its tasks (an MSIX runs nothing on
+uninstall); they then fail harmlessly.
 
 If Windows doesn't accept the tasks, the Alarm tab says so, with a *Try again*
 button: until it works, alarms only ring while bClock is running (which,

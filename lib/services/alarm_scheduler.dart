@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/alarm_model.dart';
+import 'package_identity.dart';
 
 /// Reconciles Windows Task Scheduler entries with the current alarm list so
 /// alarms fire even when bClock is closed. On non-Windows platforms this is
@@ -45,9 +46,8 @@ class AlarmScheduler {
     if (!Platform.isWindows) return true;
 
     final enabled = alarms.where((a) => a.isEnabled).toList();
-    final exe = Platform.resolvedExecutable;
-    final workDir = File(exe).parent.path;
-    return _run(buildScript(enabled, exe, workDir));
+    final exe = launchPath();
+    return _run(buildScript(enabled, exe, File(exe).parent.path));
   }
 
   /// Registers the countdown timer's task to launch `bclock.exe
@@ -55,9 +55,15 @@ class AlarmScheduler {
   /// Returns whether PowerShell ran it without error.
   static Future<bool> syncTimer(DateTime? endAt) async {
     if (!Platform.isWindows) return true;
-    final exe = Platform.resolvedExecutable;
+    final exe = launchPath();
     return _run(timerCommand(endAt, exe, File(exe).parent.path));
   }
+
+  /// What a task runs to start bClock. A plain install runs the exe; the
+  /// packaged (Store) build must go through its execution alias, since its
+  /// exe sits in a protected folder whose path changes with every update.
+  static String launchPath() =>
+      isPackaged ? executionAliasPath : Platform.resolvedExecutable;
 
   /// Runs [script], stopping at its first error. True if it exited 0.
   static Future<bool> _run(String script) async {
