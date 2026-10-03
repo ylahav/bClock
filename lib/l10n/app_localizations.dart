@@ -642,6 +642,42 @@ abstract class AppLocalizations {
   /// **'Alarms and timers keep working. Right-click the tray icon to quit.'**
   String get trayHintBody;
 
+  /// No description provided for @sectionUnanswered.
+  ///
+  /// In en, this message translates to:
+  /// **'Unanswered alarms'**
+  String get sectionUnanswered;
+
+  /// No description provided for @retryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Ring again'**
+  String get retryCount;
+
+  /// No description provided for @retryCountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How many more times an alarm rings if nobody answers it (0 = it rings once)'**
+  String get retryCountHint;
+
+  /// No description provided for @retryInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes between rings'**
+  String get retryInterval;
+
+  /// No description provided for @retryIntervalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each ring lasts one minute'**
+  String get retryIntervalHint;
+
+  /// No description provided for @missedAlarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed alarm'**
+  String get missedAlarm;
+
   /// No description provided for @sectionAlarmSound.
   ///
   /// In en, this message translates to:

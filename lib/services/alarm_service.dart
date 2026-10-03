@@ -21,6 +21,17 @@ class AlarmService extends ChangeNotifier {
 
   static const Duration snoozeDuration = Duration(minutes: 5);
 
+  /// How long one ring lasts when nobody answers it.
+  static const Duration ringDuration = Duration(minutes: 1);
+
+  /// An unanswered alarm rings again this many times, [retryInterval]
+  /// apart, then gives up with a "Missed alarm" toast. Zero rings once.
+  /// Set by AppProvider from the user's settings.
+  int retries = defaultRetries;
+  Duration retryInterval = defaultRetryInterval;
+  static const int defaultRetries = 3;
+  static const Duration defaultRetryInterval = Duration(minutes: 5);
+
   static const String alarmsStorageKey = 'alarms';
 
   /// The audio output. Its player is created on first use, so merely
@@ -78,7 +89,8 @@ class AlarmService extends ChangeNotifier {
   final Set<String> _firedIds = {};
   int _lastMinute = -1;
 
-  // Pending snooze timers, keyed by alarm id
+  // The pending re-ring per alarm id: a snooze, or a retry of an
+  // unanswered ring. One at a time, so they never stack.
   final Map<String, Timer> _snoozeTimers = {};
 
   // ── Lifecycle ─────────────────────────────────────────────
@@ -114,6 +126,17 @@ class AlarmService extends ChangeNotifier {
   void setAlarms(List<AlarmModel> alarms) {
     this.alarms = alarms;
     _hasSaved = true;
+    // An alarm that was deleted or switched off must not ring again from a
+    // pending snooze or retry.
+    final enabled = {
+      for (final a in alarms)
+        if (a.isEnabled) a.id
+    };
+    _snoozeTimers.removeWhere((id, timer) {
+      if (enabled.contains(id)) return false;
+      timer.cancel();
+      return true;
+    });
     _check();
     _commit();
   }
@@ -280,9 +303,13 @@ class AlarmService extends ChangeNotifier {
   /// Toast ids: alarms below [_timerToastId], the timer at it.
   static int _alarmToastId(String id) => id.hashCode & 0x3fffffff;
 
-  Future<void> _fire(AlarmModel alarm) {
+  /// Rings [alarm]. Unanswered for [ringDuration], it stops and, while
+  /// [attempt] is below [retries], rings again after [retryInterval].
+  Future<void> _fire(AlarmModel alarm, {int attempt = 0}) {
     final l = strings();
     return ring(
+      timeout: ringDuration,
+      onTimeout: () => _unanswered(alarm, attempt),
       id: _alarmToastId(alarm.id),
       icon: Icons.alarm,
       toastTitle: alarm.label.isEmpty ? l.navAlarm : alarm.label,
@@ -295,6 +322,28 @@ class AlarmService extends ChangeNotifier {
         RingAction('dismiss', l.dismiss, Icons.alarm_off, () {}, primary: true),
       ],
     );
+  }
+
+  void _unanswered(AlarmModel alarm, int attempt) {
+    if (attempt < retries) {
+      _snoozeTimers[alarm.id]?.cancel();
+      _snoozeTimers[alarm.id] = Timer(retryInterval, () {
+        _snoozeTimers.remove(alarm.id);
+        _fire(alarm, attempt: attempt + 1);
+      });
+      return;
+    }
+    // Gave up: leave a note of what was missed.
+    final l = strings();
+    unawaited(NotificationService.instance.show(
+      _alarmToastId(alarm.id),
+      title: l.missedAlarm,
+      body: alarm.label.isEmpty
+          ? alarm.timeString
+          : '${alarm.timeString}  ${alarm.label}',
+      actions: const {},
+      onAction: (_) {},
+    ));
   }
 
   /// The UI language's strings, for text shown outside a widget (toasts).
@@ -310,6 +359,9 @@ class AlarmService extends ChangeNotifier {
   /// behind other windows). Whichever the user answers first ends the
   /// ring: the sound stops, the toast is withdrawn, the popup closes, and
   /// then that action runs. Shared by alarms and the countdown timer.
+  ///
+  /// With [timeout], a ring nobody answers ends the same way after that
+  /// long and calls [onTimeout]; without it, it rings until answered.
   Future<void> ring({
     required int id,
     required IconData icon,
@@ -318,20 +370,37 @@ class AlarmService extends ChangeNotifier {
     required Widget headline,
     String detail = '',
     required List<RingAction> actions,
+    Duration? timeout,
+    VoidCallback? onTimeout,
   }) async {
     final notifications = NotificationService.instance;
     final close = ValueNotifier(false);
-    var answered = false;
-    void answer(RingAction action) {
-      if (answered) return;
-      answered = true;
+    Timer? giveUp;
+    var ended = false;
+
+    /// Ends the ring once: sound off, toast withdrawn, popup closed.
+    bool end() {
+      if (ended) return false;
+      ended = true;
+      giveUp?.cancel();
       unawaited(stopSound());
       unawaited(notifications.cancel(id));
       close.value = true;
-      action.onSelected();
+      return true;
+    }
+
+    void answer(RingAction action) {
+      if (end()) action.onSelected();
     }
 
     await startSound();
+    // Nobody answered within [timeout]: stop, and let the caller decide
+    // what happens next.
+    if (timeout != null) {
+      giveUp = Timer(timeout, () {
+        if (end()) onTimeout?.call();
+      });
+    }
     // Show the window (it may be hidden in the tray) so the popup is seen.
     unawaited(AppWindow.raise());
     final byKey = {for (final a in actions) a.key: a};

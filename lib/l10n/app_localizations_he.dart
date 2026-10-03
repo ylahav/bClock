@@ -293,6 +293,25 @@ class AppLocalizationsHe extends AppLocalizations {
       'השעונים המעוררים והטיימרים ממשיכים לפעול. ליציאה, לחיצה ימנית על הסמל במגש המערכת.';
 
   @override
+  String get sectionUnanswered => 'שעונים מעוררים שלא נענו';
+
+  @override
+  String get retryCount => 'צלצול חוזר';
+
+  @override
+  String get retryCountHint =>
+      'כמה פעמים נוספות השעון יצלצל אם אין מענה (0 = צלצול אחד)';
+
+  @override
+  String get retryInterval => 'דקות בין צלצולים';
+
+  @override
+  String get retryIntervalHint => 'כל צלצול נמשך דקה';
+
+  @override
+  String get missedAlarm => 'שעון מעורר שהוחמץ';
+
+  @override
   String get sectionAlarmSound => 'צליל ההתראה';
 
   @override

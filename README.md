@@ -38,7 +38,9 @@ unknown publisher: choose **More info**, then **Run anyway**.
   the local zone abbreviation (EST/EDT, CET/CEST…). Shown as analog, digital, or
   both.
 - **Alarms** — repeat on chosen weekdays or fire once, with a label, a 5-minute
-  snooze, and a looping sound. A ringing alarm or timer also shows a Windows
+  snooze, and a looping sound. An alarm nobody answers stops after a minute
+  and rings again (3 more times, 5 minutes apart, both configurable), then
+  leaves a "Missed alarm" notification. A ringing alarm or timer also shows a Windows
   notification, so it's seen behind other windows; Snooze, +1 min and Dismiss
   work from the notification too. They also fire when bClock isn't running (see
   [How alarms work](#how-alarms-work)).

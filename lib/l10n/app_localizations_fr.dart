@@ -294,6 +294,25 @@ class AppLocalizationsFr extends AppLocalizations {
       'Les alarmes et minuteurs continuent. Clic droit sur l\'icône de la zone de notification pour quitter.';
 
   @override
+  String get sectionUnanswered => 'Alarmes sans réponse';
+
+  @override
+  String get retryCount => 'Sonner à nouveau';
+
+  @override
+  String get retryCountHint =>
+      'Nombre de rappels si personne ne répond à l\'alarme (0 = une seule sonnerie)';
+
+  @override
+  String get retryInterval => 'Minutes entre les sonneries';
+
+  @override
+  String get retryIntervalHint => 'Chaque sonnerie dure une minute';
+
+  @override
+  String get missedAlarm => 'Alarme manquée';
+
+  @override
   String get sectionAlarmSound => 'Son de l\'alarme';
 
   @override

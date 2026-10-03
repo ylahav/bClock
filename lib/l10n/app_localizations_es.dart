@@ -294,6 +294,25 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las alarmas y los temporizadores siguen funcionando. Haz clic derecho en el icono de la bandeja para salir.';
 
   @override
+  String get sectionUnanswered => 'Alarmas sin responder';
+
+  @override
+  String get retryCount => 'Volver a sonar';
+
+  @override
+  String get retryCountHint =>
+      'Cuántas veces más suena una alarma si nadie responde (0 = suena una vez)';
+
+  @override
+  String get retryInterval => 'Minutos entre timbres';
+
+  @override
+  String get retryIntervalHint => 'Cada timbre dura un minuto';
+
+  @override
+  String get missedAlarm => 'Alarma perdida';
+
+  @override
   String get sectionAlarmSound => 'Sonido de alarma';
 
   @override

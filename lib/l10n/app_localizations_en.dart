@@ -293,6 +293,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Alarms and timers keep working. Right-click the tray icon to quit.';
 
   @override
+  String get sectionUnanswered => 'Unanswered alarms';
+
+  @override
+  String get retryCount => 'Ring again';
+
+  @override
+  String get retryCountHint =>
+      'How many more times an alarm rings if nobody answers it (0 = it rings once)';
+
+  @override
+  String get retryInterval => 'Minutes between rings';
+
+  @override
+  String get retryIntervalHint => 'Each ring lasts one minute';
+
+  @override
+  String get missedAlarm => 'Missed alarm';
+
+  @override
   String get sectionAlarmSound => 'Alarm sound';
 
   @override

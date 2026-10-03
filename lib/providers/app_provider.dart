@@ -36,6 +36,8 @@ class AppProvider extends ChangeNotifier {
   static const _kSoundPath = 'alarmSoundPath';
   static const _kVolume = 'alarmVolume';
   static const _kFadeIn = 'alarmFadeIn';
+  static const _kRetries = 'alarmRetries';
+  static const _kRetryMinutes = 'alarmRetryMinutes';
   static const _kShowNav = 'showNav';
   static const _kLocale = 'locale';
   static const _kWeekStart = 'weekStart';
@@ -47,6 +49,8 @@ class AppProvider extends ChangeNotifier {
   bool _alwaysOnTop = false;
   bool _closeToTray = true;
   SoundOptions _sound = const SoundOptions();
+  int _alarmRetries = AlarmService.defaultRetries;
+  int _alarmRetryMinutes = AlarmService.defaultRetryInterval.inMinutes;
   bool _showNav = true;
   WeekStart _weekStart = WeekStart.monday;
 
@@ -65,6 +69,13 @@ class AppProvider extends ChangeNotifier {
 
   /// What a ringing alarm or timer plays. AlarmService holds a copy.
   SoundOptions get sound => _sound;
+
+  /// How many more times an unanswered alarm rings (0 = once), and the
+  /// minutes between rings. AlarmService holds copies.
+  int get alarmRetries => _alarmRetries;
+  int get alarmRetryMinutes => _alarmRetryMinutes;
+  static const int maxAlarmRetries = 10;
+  static const int maxAlarmRetryMinutes = 60;
   bool get showNav => _showNav;
   WeekStart get weekStart => _weekStart;
   bool get isDark => _themeMode == ThemeMode.dark;
@@ -88,6 +99,10 @@ class AppProvider extends ChangeNotifier {
       fadeIn: p.getBool(_kFadeIn) ?? false,
     );
     AlarmService.instance.sound = _sound;
+    _alarmRetries = p.getInt(_kRetries) ?? AlarmService.defaultRetries;
+    _alarmRetryMinutes =
+        p.getInt(_kRetryMinutes) ?? AlarmService.defaultRetryInterval.inMinutes;
+    _applyRetries();
     _showNav = p.getBool(_kShowNav) ?? true;
     _languageCode = p.getString(_kLocale);
     _weekStart =
@@ -123,6 +138,8 @@ class AppProvider extends ChangeNotifier {
           : p.setString(_kSoundPath, _sound.customPath!),
       p.setDouble(_kVolume, _sound.volume),
       p.setBool(_kFadeIn, _sound.fadeIn),
+      p.setInt(_kRetries, _alarmRetries),
+      p.setInt(_kRetryMinutes, _alarmRetryMinutes),
       p.setBool(_kShowNav, _showNav),
       p.setInt(_kWeekStart, _weekStart.index),
       _languageCode == null
@@ -176,6 +193,26 @@ class AppProvider extends ChangeNotifier {
     AlarmService.instance.sound = value;
     notifyListeners();
     _save();
+  }
+
+  void setAlarmRetries(int value) {
+    _alarmRetries = value.clamp(0, maxAlarmRetries);
+    _applyRetries();
+    notifyListeners();
+    _save();
+  }
+
+  void setAlarmRetryMinutes(int value) {
+    _alarmRetryMinutes = value.clamp(1, maxAlarmRetryMinutes);
+    _applyRetries();
+    notifyListeners();
+    _save();
+  }
+
+  void _applyRetries() {
+    AlarmService.instance
+      ..retries = _alarmRetries
+      ..retryInterval = Duration(minutes: _alarmRetryMinutes);
   }
 
   /// Pass null to follow the OS locale.

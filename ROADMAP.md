@@ -46,6 +46,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Unanswered alarms stop after a minute and ring again a configurable number
+  of times, a configurable interval apart, then leave a "Missed alarm" note.
 - Alarm sound options: three built-in sounds or your own file, volume, and
   a gradual volume increase, with Preview in Settings.
 - GitHub Releases: pushing a `v<version>` tag builds and publishes the

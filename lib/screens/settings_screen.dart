@@ -157,6 +157,37 @@ class SettingsScreen extends StatelessWidget {
 
           const _Divider(),
 
+          // ── Unanswered alarms ─────────────────────────────
+          _SectionHeader(l.sectionUnanswered),
+
+          _SettingBlock(
+            title: l.retryCount,
+            subtitle: l.retryCountHint,
+            child: PlinthNumberInput(
+              value: p.alarmRetries,
+              min: 0,
+              max: AppProvider.maxAlarmRetries,
+              size: PlinthSize.sm,
+              onChanged: (v) => p.setAlarmRetries(v.toInt()),
+            ),
+          ),
+
+          _SettingBlock(
+            title: l.retryInterval,
+            subtitle: l.retryIntervalHint,
+            child: PlinthNumberInput(
+              value: p.alarmRetryMinutes,
+              min: 1,
+              max: AppProvider.maxAlarmRetryMinutes,
+              size: PlinthSize.sm,
+              // Nothing to wait between when it only rings once.
+              enabled: p.alarmRetries > 0,
+              onChanged: (v) => p.setAlarmRetryMinutes(v.toInt()),
+            ),
+          ),
+
+          const _Divider(),
+
           // ── Alarm sound ───────────────────────────────────
           _SectionHeader(l.sectionAlarmSound),
           _AlarmSoundSettings(sound: p.sound, onChanged: p.setSound),

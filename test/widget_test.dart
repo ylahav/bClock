@@ -231,6 +231,8 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'flutter.${AlarmService.alarmsStorageKey}':
           jsonEncode([oneShot.toJson()]),
+      // Ring once: this test never answers the alarm.
+      'flutter.alarmRetries': 0,
     });
     final provider = AppProvider();
     await provider.load();
@@ -255,6 +257,8 @@ void main() {
     schedulerSyncs.clear();
     await AlarmService.instance.fireById('once');
     expect(schedulerSyncs, isEmpty);
+    // Nobody answers this ring: let it time out (no retries here).
+    await tester.pump(AlarmService.ringDuration);
   });
 
   testWidgets('Alarm label dialog takes focus and saves on Enter',
