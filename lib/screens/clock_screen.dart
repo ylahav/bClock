@@ -413,19 +413,17 @@ class ClockViewToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    // Scale down (never up) when a translation outgrows a compact window.
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: PlinthSegmentedControl<ClockView>(
-        size: PlinthSize.sm,
-        items: [
-          PlinthSegmentedControlItem(ClockView.digital, l.viewDigital),
-          PlinthSegmentedControlItem(ClockView.both, l.viewBoth),
-          PlinthSegmentedControlItem(ClockView.analog, l.viewAnalog),
-        ],
-        value: view,
-        onChanged: onChanged,
-      ),
+    // In a compact window or a long translation the segments shrink and
+    // truncate by themselves (Plinth 1.10).
+    return PlinthSegmentedControl<ClockView>(
+      size: PlinthSize.sm,
+      items: [
+        PlinthSegmentedControlItem(ClockView.digital, l.viewDigital),
+        PlinthSegmentedControlItem(ClockView.both, l.viewBoth),
+        PlinthSegmentedControlItem(ClockView.analog, l.viewAnalog),
+      ],
+      value: view,
+      onChanged: onChanged,
     );
   }
 }

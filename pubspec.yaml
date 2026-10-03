@@ -17,8 +17,8 @@ dependencies:
   shared_preferences: ^2.5.5
   audioplayers: ^6.8.1
   timezone: ^0.11.1
-  plinth_components: 1.9.0
-  plinth_hooks: 1.9.0
+  plinth_components: 1.10.0
+  plinth_hooks: 1.10.0
   plinth_blocks: 0.4.0
   flutter_local_notifications: ^22.3.1
 
