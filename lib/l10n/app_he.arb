@@ -8,6 +8,8 @@
   "viewDigital": "דיגיטלי",
   "viewBoth": "שניהם",
   "viewAnalog": "אנלוגי",
+  "miniMode": "מצב מיני",
+  "exitMiniMode": "יציאה ממצב מיני",
   "toggleTheme": "החלפת ערכת נושא",
   "settings": "הגדרות",
   "hideControls": "הסתרת פקדים",

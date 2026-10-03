@@ -33,6 +33,12 @@ class AppLocalizationsHe extends AppLocalizations {
   String get viewAnalog => 'אנלוגי';
 
   @override
+  String get miniMode => 'מצב מיני';
+
+  @override
+  String get exitMiniMode => 'יציאה ממצב מיני';
+
+  @override
   String get toggleTheme => 'החלפת ערכת נושא';
 
   @override

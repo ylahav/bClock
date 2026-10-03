@@ -222,6 +222,16 @@ class _ClockScreenState extends State<ClockScreen> with WindowListener {
         padding: _pagePadding,
         actions: [
           PlinthTooltip(
+            message: l.miniMode,
+            child: PlinthActionIcon(
+              semanticLabel: l.miniMode,
+              variant: PlinthVariant.subtle,
+              color: 'gray',
+              icon: const Icon(Icons.picture_in_picture_alt_outlined),
+              onPressed: () => p.setMiniMode(true),
+            ),
+          ),
+          PlinthTooltip(
             message: l.toggleTheme,
             child: PlinthActionIcon(
               semanticLabel: l.toggleTheme,

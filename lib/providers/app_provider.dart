@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import '../models/sound_options.dart';
 import '../services/alarm_service.dart';
+import '../services/mini_window.dart';
 import '../services/tray_service.dart';
 
 enum ClockView { analog, digital, both }
@@ -32,6 +33,7 @@ class AppProvider extends ChangeNotifier {
   static const _kSize = 'clockSize';
   static const _kOnTop = 'alwaysOnTop';
   static const _kCloseToTray = 'closeToTray';
+  static const _kMini = 'miniMode';
   static const _kSound = 'alarmSound';
   static const _kSoundPath = 'alarmSoundPath';
   static const _kVolume = 'alarmVolume';
@@ -48,6 +50,7 @@ class AppProvider extends ChangeNotifier {
   ClockSizeOption _clockSize = ClockSizeOption.medium;
   bool _alwaysOnTop = false;
   bool _closeToTray = true;
+  bool _miniMode = false;
   SoundOptions _sound = const SoundOptions();
   int _alarmRetries = AlarmService.defaultRetries;
   int _alarmRetryMinutes = AlarmService.defaultRetryInterval.inMinutes;
@@ -66,6 +69,17 @@ class AppProvider extends ChangeNotifier {
   /// Whether closing the window hides bClock in the tray (on by default)
   /// rather than quitting. Applied by TrayService.
   bool get closeToTray => _closeToTray;
+
+  /// Whether the window is the small, frameless, always-on-top clock.
+  /// Remembered across restarts; main.dart applies it at startup.
+  bool get miniMode => _miniMode;
+
+  /// The mini window's size for the current clock view.
+  Size get miniWindowSize => switch (_clockView) {
+        ClockView.digital => const Size(200, 84),
+        ClockView.analog => const Size(160, 160),
+        ClockView.both => const Size(170, 236),
+      };
 
   /// What a ringing alarm or timer plays. AlarmService holds a copy.
   SoundOptions get sound => _sound;
@@ -92,6 +106,7 @@ class AppProvider extends ChangeNotifier {
         .values[p.getInt(_kSize) ?? ClockSizeOption.medium.index];
     _alwaysOnTop = p.getBool(_kOnTop) ?? false;
     _closeToTray = p.getBool(_kCloseToTray) ?? true;
+    _miniMode = p.getBool(_kMini) ?? false;
     _sound = SoundOptions(
       sound: AlarmSound.values[p.getInt(_kSound) ?? AlarmSound.beeps.index],
       customPath: p.getString(_kSoundPath),
@@ -132,6 +147,7 @@ class AppProvider extends ChangeNotifier {
       p.setInt(_kSize, _clockSize.index),
       p.setBool(_kOnTop, _alwaysOnTop),
       p.setBool(_kCloseToTray, _closeToTray),
+      p.setBool(_kMini, _miniMode),
       p.setInt(_kSound, _sound.sound.index),
       _sound.customPath == null
           ? p.remove(_kSoundPath)
@@ -175,7 +191,37 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> setAlwaysOnTop(bool value) async {
     _alwaysOnTop = value;
-    await windowManager.setAlwaysOnTop(value);
+    if (!_miniMode) await windowManager.setAlwaysOnTop(value);
+    notifyListeners();
+    _save();
+  }
+
+  /// Switches between the full app and the mini clock, resizing the window.
+  Future<void> setMiniMode(bool value) async {
+    if (_miniMode == value || _switchingMini) return;
+    _switchingMini = true;
+    try {
+      if (value) {
+        // Content first: the window never shows the full app squeezed
+        // into the mini size.
+        _setMini(true);
+        await MiniWindow.enter(miniWindowSize);
+      } else {
+        // Window first: the Clock tab fits the window to its clock as soon
+        // as it is showing again, and must measure the restored width, not
+        // the mini one.
+        await MiniWindow.exit(alwaysOnTop: _alwaysOnTop);
+        _setMini(false);
+      }
+    } finally {
+      _switchingMini = false;
+    }
+  }
+
+  bool _switchingMini = false;
+
+  void _setMini(bool value) {
+    _miniMode = value;
     notifyListeners();
     _save();
   }

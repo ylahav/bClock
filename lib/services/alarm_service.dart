@@ -401,8 +401,9 @@ class AlarmService extends ChangeNotifier {
         if (end()) onTimeout?.call();
       });
     }
-    // Show the window (it may be hidden in the tray) so the popup is seen.
-    unawaited(AppWindow.raise());
+    // Show the full window (it may be hidden in the tray, or in mini mode)
+    // so the popup is seen.
+    unawaited(AppWindow.showForPopup());
     final byKey = {for (final a in actions) a.key: a};
     unawaited(notifications.show(
       id,

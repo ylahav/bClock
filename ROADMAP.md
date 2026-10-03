@@ -5,7 +5,7 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Next
 
-1. ⭐ **Mini mode:** a tiny, borderless, always-on-top clock to park anywhere.
+Nothing is queued. Pick from Later.
 
 ## On hold
 
@@ -46,6 +46,8 @@ up. Items move to **Done** with the PR that shipped them.
 
 ## Done
 
+- Mini mode: a small, frameless, always-on-top clock; drag to move,
+  double-click to return; remembered across restarts.
 - Unanswered alarms stop after a minute and ring again a configurable number
   of times, a configurable interval apart, then leave a "Missed alarm" note.
 - Alarm sound options: three built-in sounds or your own file, volume, and

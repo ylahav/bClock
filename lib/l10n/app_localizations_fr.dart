@@ -33,6 +33,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get viewAnalog => 'Analogique';
 
   @override
+  String get miniMode => 'Mode mini';
+
+  @override
+  String get exitMiniMode => 'Quitter le mode mini';
+
+  @override
   String get toggleTheme => 'Changer de thème';
 
   @override

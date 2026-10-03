@@ -8,6 +8,8 @@
   "viewDigital": "Digital",
   "viewBoth": "Both",
   "viewAnalog": "Analog",
+  "miniMode": "Mini mode",
+  "exitMiniMode": "Exit mini mode",
   "toggleTheme": "Toggle theme",
   "settings": "Settings",
   "hideControls": "Hide controls",

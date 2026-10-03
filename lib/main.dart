@@ -9,7 +9,9 @@ import 'l10n/app_localizations.dart';
 import 'l10n/plinth_strings_delegate.dart';
 import 'providers/app_provider.dart';
 import 'services/alarm_service.dart';
+import 'services/app_window.dart';
 import 'services/legacy_data.dart';
+import 'services/mini_window.dart';
 import 'services/notification_service.dart';
 import 'services/timer_service.dart';
 import 'services/tray_service.dart';
@@ -19,6 +21,7 @@ import 'screens/stopwatch_screen.dart';
 import 'screens/timer_screen.dart';
 import 'screens/world_clock_screen.dart';
 import 'screens/alarm_screen.dart';
+import 'widgets/mini_clock.dart';
 
 final _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -86,7 +89,14 @@ void main(List<String> args) async {
     center: true,
   );
 
+  // A ring's popup needs the full window.
+  AppWindow.leaveMini = () => appProvider.setMiniMode(false);
+
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    // Closed in mini mode: come back the same way.
+    if (appProvider.miniMode) {
+      await MiniWindow.enter(appProvider.miniWindowSize, saveNormal: false);
+    }
     await windowManager.show();
     await windowManager.focus();
   });
@@ -152,14 +162,36 @@ class _MainScreenState extends State<MainScreen> {
     final theme = context.plinth;
     final l = AppLocalizations.of(context);
 
+    final mini = provider.miniMode;
     final screens = [
-      ClockScreen(active: _currentIndex == 0),
+      // The Clock tab sizes the window to its clock; not while mini mode
+      // owns the window's size.
+      ClockScreen(active: _currentIndex == 0 && !mini),
       const StopwatchScreen(),
       const TimerScreen(),
       const WorldClockScreen(),
       const AlarmScreen(),
     ];
 
+    // Mini mode covers the app rather than replacing it: the tabs stay
+    // alive underneath (Offstage), so nothing reloads on the way back.
+    return Stack(
+      children: [
+        Offstage(offstage: mini, child: _app(provider, theme, l, screens)),
+        if (mini)
+          Positioned.fill(
+            child: MiniClock(
+              view: provider.clockView,
+              digitalPosition: provider.digitalPosition,
+              onExit: () => provider.setMiniMode(false),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _app(AppProvider provider, PlinthTheme theme, AppLocalizations l,
+      List<Widget> screens) {
     return Scaffold(
       // Clip so a screen overflowing the compact window can't paint under
       // the transparent nav handle.

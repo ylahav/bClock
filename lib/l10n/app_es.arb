@@ -8,6 +8,8 @@
   "viewDigital": "Digital",
   "viewBoth": "Ambos",
   "viewAnalog": "Analógico",
+  "miniMode": "Modo mini",
+  "exitMiniMode": "Salir del modo mini",
   "toggleTheme": "Cambiar tema",
   "settings": "Ajustes",
   "hideControls": "Ocultar controles",

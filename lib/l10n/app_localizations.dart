@@ -150,6 +150,18 @@ abstract class AppLocalizations {
   /// **'Analog'**
   String get viewAnalog;
 
+  /// No description provided for @miniMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Mini mode'**
+  String get miniMode;
+
+  /// No description provided for @exitMiniMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit mini mode'**
+  String get exitMiniMode;
+
   /// No description provided for @toggleTheme.
   ///
   /// In en, this message translates to:

@@ -25,6 +25,8 @@ unknown publisher: choose **More info**, then **Run anyway**.
 - **Clock** — analog, digital, or both stacked, in three sizes. The window
   resizes itself to fit the clock, and the controls and bottom navigation can be
   collapsed for a bare clock face. Optional *always on top*.
+- **Mini mode** — shrinks bClock to a small clock with no title bar that
+  stays on top of other windows. Drag it anywhere; double-click to return.
 - **Stopwatch** — with laps (fastest and slowest highlighted). A running
   stopwatch keeps counting while the app is closed.
 - **Timer** — a countdown with presets (1 to 45 minutes), a custom value in
